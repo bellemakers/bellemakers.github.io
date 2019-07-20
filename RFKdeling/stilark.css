@@ -1,0 +1,32 @@
+
+body {
+    background-color: #e0e0e0;
+	font-family: "Century Gothic", Arial, sans-serif;
+	font-size: 24px;
+	color: #323232;
+}
+
+h1 {
+    color: #2E0927; /* Define chapter looks (color) GVD */
+}
+
+h2 {
+    color: #781D5F;
+	font-family: serif;
+}
+
+h3 {
+    color: #D90000;
+}
+
+h4 {
+    color: #FF2D00;
+}
+
+h5 {
+    color: #FF8C00;
+}
+
+h6 {
+    color: #04756F;
+}
