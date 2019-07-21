@@ -25,7 +25,7 @@ h4 {
 
 h5 {
     color: #FF8C00;
-    align: right;
+    float: right;
 }
 
 h6 {
