@@ -1,12 +1,12 @@
 .innpakning {
-    width: 1000px; /* innpakningens bredde */
+    width: 800px; /* innpakningens bredde */
     background-color: #404040; /* en mørk gråfarge */
     margin: auto; /* like stor høyre- og venstremarg */
     display: flex; /* angir at vi vil bruke flexbox */
     flex-direction: column; /* plasserer bokser i en kolonne */
 }
 .topptekst {
-    height: 293px; /* overskrift-/toppteksthøyde */
+    height: 235px; /* overskrift-/toppteksthøyde */
     background-color: #909090; /* en lys gråfarge */
     /* padding: 5px; /* avstand mellom bokskant og innhold */
     margin: 5px;  /* luft rundt overskrift-/topptekstboks */
