@@ -1,0 +1,26 @@
+<!-- kommentar: først standard intro -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Felles plandag Sauda vgs - introduksjon</title>
+	<!-- UTF-8 gjør at vi kan bruke æ, ø og å  -->
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="stilark.css">
+</head>
+<body>
+
+	<h2 id="k1">Introduksjon</h2>
+	Learning by doing. Hvorfor programmering (og programfag Informasjonsteknologi)? 
+	<ul>
+		<li>Er det nok fokus på programering i vgs? (se meningsmåling hos studenter OsloMet <a href="OsloMet.html" target=_blank>her</a>, november 2019)
+		<li>Lære å mislykkes, programmering er ikke lett (prøv, test, får feilmeldinger, prøv på nytt -> læringsprosess!) 
+		<li>Kritisk tenkning og problemløsende evne, å programmere hjelper å utvikle dette
+		<li>Omdanne kreativitet til et håndgripelig produkt
+		<li>Forstå hvordan den digitale verden fungerer (se video nedenfor, algoritme_ST)
+		<li>Jobbmuligheter (se <a href="https://www.ung.no/oss/utdanning/vgs/200905.html" target=_blank>ung.no</a>, for eksempel...)
+	</ul>
+	<p><iframe width="560" height="315" src="https://www.youtube.com/embed/IXF3S92H_Sg" frameborder="0" 
+	allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></p>
+	<p>Kort gjennomgang i forskjellige karruseller.</p>
+	
+  <center><p><a href="https://bellemakers.github.io/MKSauda/fellplandag.html"><FONT COLOR="#C70039">Tilbake til tops</FONT COLOR></a></p></center>
