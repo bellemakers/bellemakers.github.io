@@ -34,7 +34,7 @@
 	</ul></p>
 
 	<h2 id="k1">Introduksjon</h2>
-	Learning by doing. Hvorfor programmering og programfag Informasjonsteknologi? 
+	Learning by doing. Hvorfor programmering (og programfag Informasjonsteknologi)? 
 	<ul>
 		<li>Er det nok fokus på programering i vgs? (se meningsmåling hos studenter OsloMet <a href="OsloMet.html" target=_blank>her</a>, november 2019)
 		<li>Lære å mislykkes, programmering er ikke lett (prøv, test, får feilmeldinger, prøv på nytt -> læringsprosess!) 
@@ -51,12 +51,12 @@
 	<h2 id="k2">Programvare for Python: trinket eller Thonny</h2>
 	Klikk <a href="https://trinket.io/python" target=_blank>her</a> eller 
 	<a href="https://ndla.no/subject:3d9454e8-460e-42c7-8f28-71663fbbf6e6/topic:edeb4b57-277d-45de-abe2-b96ee0d67ad8/topic:6022d7d9-04b9-4ce8-9f1f-2a0a20191fdd/resource:da134ac8-9ada-47c3-adf2-31e0b95ec5fb?filters=urn:filter:f18b0daa-6507-4025-8998-b8a11c8ccc70" target=_blank>her</a> (NDLA) for å komme i gang med en online, 
-		web basert python interpreter (Trinket). Gode muligheter til å bruke i matte- og fysikk-undervisning 
+		web basert python interpreter (<b>Trinket</b>). Gode muligheter til å bruke i matte- og fysikk-undervisning 
 	<a href="https://utdanningsforskning.no/artikler/slik-kan-programmering-endre-skolen/" 
 		target=_blank>(Slik kan programmering endre skolen)</a> og se på <a href="https://www.youtube.com/channel/UCz-LHhAaDTxEV2c1Vr9uKWg" 
 		target=_blank>denne youtube kanal</a> fra Andreas Haraldsrud (foredragsholder i Kopervik, dd. 13.februar 2019, bruker Anaconda 
 		som python editor). 
-	<p><a href="https://thonny.org/" target=_blank)>Thonny:</a> Hvorfor bruke Thonny?
+	<p><a href="https://thonny.org/" target=_blank)>Thonny:</a> Hvorfor bruke <b>Thonny</b>?
 		<ol>
 			<li>Enkelt og oversiktlig, god egnet for nybegynnere
 			<li>Lik bruk på forskjellige platformer (Windows, Mac og Linux), for eksempel installering av moduler
@@ -74,13 +74,13 @@
 		<h3>Variabler</h3>
 			Det finnes heltall (Z: integer), desimaltall (R: float) og tekst (string).
 			<br><br><img src="media/1_var_datatyper.png" alt="Variabler og datatyper" height="350">
-			<br>I oversikt ovenfor blir det definert forskjellige variabler: a, b, .... , f. Eksempel: variabel <b>a =</b> (er lik) <b>4</b>.
+			<br>I oversikt ovenfor blir det definert forskjellige <b>variabler</b>: a, b, .... , f. Eksempel: variabel <b>a =</b> (er lik) <b>4</b>.
 		<h3>Output og input</h3>
-			Vi trenger å hente inn data (input: definere variabler eller spør bruker å legge inn data) og vi bør skrive ut data (output i konsol).
+			Vi trenger å hente inn data (<b>input</b>: definere variabler eller spør bruker å legge inn data) og vi bør skrive ut data (<b>output</b> i konsol).
 			<br><br><img src="media/inoutput.png" alt="Output og input" width="400">
 			<br>Output stemmer ikke helti oversikt ovenfor, skal bli: <b>Hei!</b>.
 		<h3>Lister (arrays)</h3>
-			Lister er et samling av flere ting i en og samme variabel. Ettersom lister og løkker henger tett sammen i Python, bør du 
+			<b>Lister</b> er et samling av flere ting i en og samme variabel. Ettersom lister og løkker henger tett sammen i Python, bør du 
 				huske dette med lister seinere på websiden.
 			<br><br><img src="media/9_list.png" alt="Lister og litt om arrays" height="350">
 			<br>For å bruke lister i Thonny, importer pylab biblioteket. Deretter blir første linje i programmet: <b>from pylab import *</b>. 
@@ -104,7 +104,7 @@
 	
 	<h2 id="k4">Litt videre: vilkår, løkker og funksjoner </h2>
 		<h3>Vilkår (valg-setninger)</h3>
-			Vi trenger valg-setninger i kode, til å ta beslutninger og / eller situasjonsbetingede hanslinger. Hvordan virker dette? Hvis en betingelse er tilfredsstilt, 
+			Vi trenger <b>valg-setninger</b> i kode, til å ta beslutninger og / eller situasjonsbetingede hanslinger. Hvordan virker dette? Hvis en betingelse er tilfredsstilt, 
 				utføres handling (en eller flere kodelinjer) eller utføres den ikke. Deretter fortsetter kode som står bak valg setning(ene). Se på flytskjema nedenfor
 				til venstre.
 			<br><br><img src="media/flytskjema.png" alt="flytskjema valg-setning" height="350">
@@ -116,19 +116,22 @@
 				presentert. Det er også mulig å kombinere betingelser med logiske uttrykk <b>OR</b>, <b>AND</b> og <b>NOT</b>.</p>
 			<img src="media/sammenligne.png" alt="tegn til sammenligning" width="500">
 		<h3>Løkker (while)</h3>
-			En While-løkke er det vi kaller en tilstandsløkke. Den kjører helt frem til en logiak tilstand ikke lenger er oppfylt. Se på flyttskjema 
+			En <b>While-løkke</b> er det vi kaller en tilstandsløkke. Den kjører helt frem til en logiak tilstand ikke lenger er oppfylt. Se på flyttskjema 
 				nedenfor til venstre. Legg merke til Python syntax!
 			<br><br><img src="media/flytskjema_w.png" alt="flytskjema While-løkke" height="350">
 			<img src="media/5_while.png" alt="syntax while-løkke" height="350">
 		<h3>Løkker (for)</h3>
-			En for-løkke er en løkke som gjentar kode. Den er vanlig å benytte samtidig med range-funksjonen for telling, eller i kombinasjon med 
+			En <b>for-løkke</b> er en løkke som gjentar kode. Den er vanlig å benytte samtidig med range-funksjonen for telling, eller i kombinasjon med 
 				en liste for å iterere over elementer i lista. Hva skjer når en skriver kode som skriver ut tallene 1 til 5? Variabelen num får
 				verdier fra lista, element for element, for hver runde løkka kjører, se figur nedenfor helt til venstre.
 			<br><br><img src="media/iteration.png" alt="Hva skjer i en løkke (iterering)" height="350">
 			<img src="media/range_liste.png" alt="eksempler på range - liste" height="350">
 			<img src="media/6_for.png" alt="syntax for_løkke" height="350">
 			<br>I middelst figur ovenfor blir sammenligningen av <b>range</b> og <b>liste</b> presentert. I figuren til høyre står Python syntax for for-løkke.
-			
+		<h3>Funksjoner</h3>
+			En <b>funksjon</b> er en blokk med kode som blir utførst når den <i>kalles</i> på. En funksjon kan ta ingen, &#233;n eller flere <i>parametre</i> som input, og returnere ingen, 
+				&#233;n eller flere <i>variabler</i> som output.
+	
 		<center><p><a href="https://bellemakers.github.io/MKSauda/fellplandag.html"><FONT COLOR="#C70039">Tilbake til tops</FONT COLOR></a></p></center>
 	
 	<h2 id="k5">Oppgaver for i dag</h2>
