@@ -11,8 +11,8 @@
 	<h1>Eksempel oppgave naturvern / KI</h1>
 	<h2>
 	<p>Click on the image to download the pdf:<p>
-	<a href="/images/myw3schoolsimage.jpg" download="w3logo">
-  	<img src="/images/myw3schoolsimage.jpg" alt="W3Schools" width="104" height="142">
+	<a href="media/eksempel_NF.pdf" download="eksempel_NF.pdf">
+  	<img src="media/pdflogo.jpeg" alt="eksempel oppgave naturvern / KI" width="104" height="142">
 	</a>
 	</h2>
 	<h3>Fossane, Norway</h3>
