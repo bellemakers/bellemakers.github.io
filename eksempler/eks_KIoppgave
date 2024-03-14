@@ -2,16 +2,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Erasmus+ Helsinki Flipped Classroom and distant learning: following Finland</title>
+	<title>Eksempel oppgave naturvern / KI</title>
 	<!-- UTF-8 gjør at vi kan bruke æ, ø og å  -->
 	<meta charset="UTF-8">
 	<link rel="stylesheet" href="../MKSauda/stilark.css">
 </head>
 <body>
-	<h1>Presentation Martijn Bellemakers</h1>
-	<h2>Erasmus+kurs Helsinki:
-		<br>Flipped Classroom and distant learning: 
-		<br>following Finland</h2>
+	<h1>Eksempel oppgave naturvern / KI</h1>
+	<h2>
+	<p>Click on the image to download the pdf:<p>
+	<a href="/images/myw3schoolsimage.jpg" download="w3logo">
+  	<img src="/images/myw3schoolsimage.jpg" alt="W3Schools" width="104" height="142">
+	</a>
+	</h2>
 	<h3>Fossane, Norway</h3>
 	<p><img src="media/1Vikki.png" width="1000" alt="Fossane.no"> </p>	
 	
