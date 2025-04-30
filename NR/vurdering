@@ -1,0 +1,18 @@
+<!-- kommentar: først standard intro -->
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Digital evaluering Fellestid og erfaringsdeling</title>
+	<!-- UTF-8 gjør at vi kan bruke æ, ø og å  -->
+	<meta charset="UTF-8">
+	<link rel="stylesheet" href="../fagdagnr/stilark.css">
+</head>
+<body>
+
+	<h1>Digital evaluering Fellestid og erfaringsdeling</h1>
+	<p><b>11 Mai 2023</b></p>
+	<p><img src="logotr.png" align="right" width="300" alt="logo-transparent"></p>
+	<p>&nbsp;</p>
+
+</body>
+</html>
