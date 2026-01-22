@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="no" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dyrekategorisering</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Nunito', sans-serif;
+    }
+    .animal-card {
+      cursor: grab;
+      transition: all 0.2s ease;
+      user-select: none;
+      touch-action: none;
+    }
+    .animal-card:active {
+      cursor: grabbing;
+    }
+    .animal-card.dragging {
+      opacity: 0.7;
+      transform: scale(1.05) rotate(2deg);
+      z-index: 1000;
+    }
+    .category-box {
+      transition: all 0.3s ease;
+      min-height: 140px;
+    }
+    .category-box.drag-over {
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+    .sorted-item {
+      animation: popIn 0.3s ease;
+    }
+    @keyframes popIn {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    .shake {
+      animation: shake 0.4s ease;
+    }
+    @keyframes celebrate {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
+    }
+    .celebrate {
+      animation: celebrate 0.5s ease;
+    }
+    .progress-fill {
+      transition: width 0.5s ease;
+    }
+    .feedback-toast {
+      animation: slideIn 0.3s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes confetti {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100px) rotate(720deg); opacity: 0; }
+    }
+    .confetti {
+      position: absolute;
+      animation: confetti 1s ease forwards;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full m-0 p-0">
+  <div id="app" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
+   <div class="max-w-5xl mx-auto p-4 md:p-6"><!-- Header -->
+    <div class="text-center mb-6">
+     <h1 id="gameTitle" class="text-2xl md:text-4xl font-extrabold text-white mb-2 tracking-tight">🦁 Sorter dyrene! 🐸</h1>
+     <p class="text-gray-300 text-sm md:text-base">Dra hvert dyr til riktig kategori</p>
+    </div><!-- Progress -->
+    <div class="bg-white/10 backdrop-blur rounded-full p-1 mb-6 max-w-md mx-auto">
+     <div class="flex items-center gap-3 px-3"><span class="text-white text-sm font-semibold whitespace-nowrap">Fremgang:</span>
+      <div class="flex-1 bg-white/20 rounded-full h-4 overflow-hidden">
+       <div id="progressBar" class="progress-fill h-full bg-gradient-to-r from-emerald-400 to-cyan-400 rounded-full" style="width: 0%"></div>
+      </div><span id="progressText" class="text-white text-sm font-bold whitespace-nowrap">0/9</span>
+     </div>
+    </div><!-- Feedback Toast -->
+    <div id="feedbackToast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 hidden">
+     <div id="feedbackContent" class="px-6 py-3 rounded-xl font-bold text-lg shadow-xl"></div>
+    </div><!-- Animals to sort -->
+    <div id="animalsContainer" class="bg-white/10 backdrop-blur rounded-2xl p-4 mb-6">
+     <h2 class="text-white font-bold mb-3 text-center text-sm uppercase tracking-wider">🎯 Dyr som skal sorteres</h2>
+     <div id="animalsList" class="flex flex-wrap justify-center gap-3"><!-- Animals will be inserted here -->
+     </div>
+    </div><!-- Categories -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6"><!-- Pattedyr -->
+     <div class="category-box rounded-2xl p-4" style="background: linear-gradient(145deg, #e74c3c, #c0392b);" data-category="pattedyr">
+      <h3 class="text-white font-extrabold text-center mb-3 text-lg">🦁 Pattedyr</h3>
+      <p class="text-white/70 text-xs text-center mb-3">Dyr som føder levende unger og gir melk</p>
+      <div class="sorted-animals min-h-[60px] bg-white/20 rounded-xl p-2 flex flex-wrap gap-2 justify-center" data-category="pattedyr">
+      </div>
+     </div><!-- Krypdyr -->
+     <div class="category-box rounded-2xl p-4" style="background: linear-gradient(145deg, #27ae60, #1e8449);" data-category="krypdyr">
+      <h3 class="text-white font-extrabold text-center mb-3 text-lg">🐍 Krypdyr</h3>
+      <p class="text-white/70 text-xs text-center mb-3">Kaldblodige dyr med skjell som legger egg på land</p>
+      <div class="sorted-animals min-h-[60px] bg-white/20 rounded-xl p-2 flex flex-wrap gap-2 justify-center" data-category="krypdyr">
+      </div>
+     </div><!-- Amfibier -->
+     <div class="category-box rounded-2xl p-4" style="background: linear-gradient(145deg, #3498db, #2980b9);" data-category="amfibier">
+      <h3 class="text-white font-extrabold text-center mb-3 text-lg">🐸 Amfibier</h3>
+      <p class="text-white/70 text-xs text-center mb-3">Lever både i vann og på land, legger egg i vann</p>
+      <div class="sorted-animals min-h-[60px] bg-white/20 rounded-xl p-2 flex flex-wrap gap-2 justify-center" data-category="amfibier">
+      </div>
+     </div>
+    </div><!-- Stats -->
+    <div class="flex justify-center gap-6 text-center">
+     <div class="bg-emerald-500/20 backdrop-blur rounded-xl px-4 py-2">
+      <div id="correctCount" class="text-2xl font-extrabold text-emerald-400">
+       0
+      </div>
+      <div class="text-emerald-300 text-xs uppercase tracking-wider">
+       Riktige
+      </div>
+     </div>
+     <div class="bg-red-500/20 backdrop-blur rounded-xl px-4 py-2">
+      <div id="wrongCount" class="text-2xl font-extrabold text-red-400">
+       0
+      </div>
+      <div class="text-red-300 text-xs uppercase tracking-wider">
+       Feil
+      </div>
+     </div><button id="resetBtn" class="bg-white/20 hover:bg-white/30 backdrop-blur rounded-xl px-4 py-2 text-white font-bold transition-all"> 🔄 Start på nytt </button>
+    </div><!-- Victory Screen -->
+    <div id="victoryScreen" class="hidden fixed inset-0 bg-black/80 backdrop-blur flex items-center justify-center z-50">
+     <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-3xl p-8 text-center max-w-sm mx-4 relative overflow-hidden">
+      <div id="confettiContainer"></div>
+      <div class="text-6xl mb-4">
+       🎉
+      </div>
+      <h2 class="text-3xl font-extrabold text-white mb-2">Gratulerer!</h2>
+      <p class="text-white/90 mb-4">Du klarte alle dyrene!</p>
+      <div class="bg-white/30 rounded-xl p-3 mb-4"><span class="text-white font-bold">Resultat: </span> <span id="finalScore" class="text-white font-extrabold"></span>
+      </div><button id="playAgainBtn" class="bg-white text-orange-600 font-extrabold px-6 py-3 rounded-xl hover:scale-105 transition-transform"> Spill igjen! 🚀 </button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      game_title: '🦁 Sorter dyrene! 🐸',
+      success_message: 'Riktig! 🎉',
+      error_message: 'Prøv igjen! 🤔',
+      primary_color: '#1a1a2e',
+      text_color: '#ffffff',
+      accent_color: '#e74c3c',
+      secondary_color: '#27ae60',
+      tertiary_color: '#3498db',
+      font_family: 'Nunito',
+      font_size: 16
+    };
+
+    let config = { ...defaultConfig };
+
+    const animals = [
+      { id: 1, name: 'Løve', emoji: '🦁', category: 'pattedyr' },
+      { id: 2, name: 'Elefant', emoji: '🐘', category: 'pattedyr' },
+      { id: 3, name: 'Delfin', emoji: '🐬', category: 'pattedyr' },
+      { id: 4, name: 'Slange', emoji: '🐍', category: 'krypdyr' },
+      { id: 5, name: 'Skilpadde', emoji: '🐢', category: 'krypdyr' },
+      { id: 6, name: 'Krokodille', emoji: '🐊', category: 'krypdyr' },
+      { id: 7, name: 'Frosk', emoji: '🐸', category: 'amfibier' },
+      { id: 8, name: 'Salamander', emoji: '🦎', category: 'amfibier' },
+      { id: 9, name: 'Padde', emoji: '🐸', category: 'amfibier' }
+    ];
+
+    let gameState = {
+      sorted: [],
+      correct: 0,
+      wrong: 0
+    };
+
+    let draggedAnimal = null;
+
+    function shuffleArray(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function renderAnimals() {
+      const container = document.getElementById('animalsList');
+      const unsorted = shuffleArray(animals.filter(a => !gameState.sorted.includes(a.id)));
+      
+      container.innerHTML = unsorted.map(animal => `
+        <div class="animal-card bg-white rounded-xl px-4 py-3 shadow-lg flex items-center gap-2"
+             draggable="true"
+             data-id="${animal.id}"
+             data-category="${animal.category}">
+          <span class="text-2xl">${animal.emoji}</span>
+          <span class="font-bold text-gray-800">${animal.name}</span>
+        </div>
+      `).join('');
+
+      if (unsorted.length === 0) {
+        container.innerHTML = '<p class="text-white/60 text-center py-4">Alle dyr er sortert! 🎉</p>';
+      }
+
+      setupDragListeners();
+    }
+
+    function setupDragListeners() {
+      document.querySelectorAll('.animal-card').forEach(card => {
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        card.addEventListener('touchstart', handleTouchStart, { passive: false });
+        card.addEventListener('touchmove', handleTouchMove, { passive: false });
+        card.addEventListener('touchend', handleTouchEnd);
+      });
+
+      document.querySelectorAll('.sorted-animals').forEach(zone => {
+        zone.addEventListener('dragover', handleDragOver);
+        zone.addEventListener('dragleave', handleDragLeave);
+        zone.addEventListener('drop', handleDrop);
+      });
+    }
+
+    function handleDragStart(e) {
+      draggedAnimal = {
+        id: parseInt(e.target.dataset.id),
+        category: e.target.dataset.category,
+        element: e.target
+      };
+      e.target.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+      document.querySelectorAll('.category-box').forEach(box => box.classList.remove('drag-over'));
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      e.currentTarget.closest('.category-box').classList.add('drag-over');
+    }
+
+    function handleDragLeave(e) {
+      e.currentTarget.closest('.category-box').classList.remove('drag-over');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      const targetCategory = e.currentTarget.dataset.category;
+      processSort(targetCategory, e.currentTarget);
+    }
+
+    // Touch handlers for mobile
+    let touchClone = null;
+    
+    function handleTouchStart(e) {
+      e.preventDefault();
+      const card = e.target.closest('.animal-card');
+      if (!card) return;
+      
+      draggedAnimal = {
+        id: parseInt(card.dataset.id),
+        category: card.dataset.category,
+        element: card
+      };
+      
+      touchClone = card.cloneNode(true);
+      touchClone.style.position = 'fixed';
+      touchClone.style.pointerEvents = 'none';
+      touchClone.style.zIndex = '1000';
+      touchClone.style.opacity = '0.8';
+      touchClone.style.transform = 'scale(1.1)';
+      document.body.appendChild(touchClone);
+      
+      const touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - 50) + 'px';
+      touchClone.style.top = (touch.clientY - 25) + 'px';
+      
+      card.classList.add('dragging');
+    }
+
+    function handleTouchMove(e) {
+      e.preventDefault();
+      if (!touchClone) return;
+      
+      const touch = e.touches[0];
+      touchClone.style.left = (touch.clientX - 50) + 'px';
+      touchClone.style.top = (touch.clientY - 25) + 'px';
+      
+      document.querySelectorAll('.category-box').forEach(box => {
+        const rect = box.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          box.classList.add('drag-over');
+        } else {
+          box.classList.remove('drag-over');
+        }
+      });
+    }
+
+    function handleTouchEnd(e) {
+      if (!touchClone || !draggedAnimal) {
+        cleanup();
+        return;
+      }
+      
+      const touch = e.changedTouches[0];
+      let dropped = false;
+      
+      document.querySelectorAll('.sorted-animals').forEach(zone => {
+        const rect = zone.getBoundingClientRect();
+        if (touch.clientX >= rect.left && touch.clientX <= rect.right &&
+            touch.clientY >= rect.top && touch.clientY <= rect.bottom) {
+          processSort(zone.dataset.category, zone);
+          dropped = true;
+        }
+      });
+      
+      cleanup();
+    }
+
+    function cleanup() {
+      if (touchClone) {
+        touchClone.remove();
+        touchClone = null;
+      }
+      document.querySelectorAll('.animal-card').forEach(c => c.classList.remove('dragging'));
+      document.querySelectorAll('.category-box').forEach(box => box.classList.remove('drag-over'));
+      draggedAnimal = null;
+    }
+
+    function processSort(targetCategory, targetZone) {
+      if (!draggedAnimal) return;
+      
+      const isCorrect = draggedAnimal.category === targetCategory;
+      const animal = animals.find(a => a.id === draggedAnimal.id);
+      
+      if (isCorrect) {
+        gameState.sorted.push(draggedAnimal.id);
+        gameState.correct++;
+        
+        const sortedItem = document.createElement('div');
+        sortedItem.className = 'sorted-item bg-white/90 rounded-lg px-2 py-1 text-sm font-bold flex items-center gap-1';
+        sortedItem.innerHTML = `<span>${animal.emoji}</span><span class="text-gray-700">${animal.name}</span>`;
+        targetZone.appendChild(sortedItem);
+        
+        showFeedback(true);
+        targetZone.closest('.category-box').classList.add('celebrate');
+        setTimeout(() => targetZone.closest('.category-box').classList.remove('celebrate'), 500);
+      } else {
+        gameState.wrong++;
+        showFeedback(false);
+        draggedAnimal.element.classList.add('shake');
+        setTimeout(() => draggedAnimal.element.classList.remove('shake'), 400);
+      }
+      
+      updateProgress();
+      renderAnimals();
+      
+      if (gameState.sorted.length === animals.length) {
+        setTimeout(showVictory, 500);
+      }
+      
+      draggedAnimal = null;
+    }
+
+    function showFeedback(isCorrect) {
+      const toast = document.getElementById('feedbackToast');
+      const content = document.getElementById('feedbackContent');
+      
+      content.textContent = isCorrect 
+        ? (config.success_message || defaultConfig.success_message)
+        : (config.error_message || defaultConfig.error_message);
+      content.className = `px-6 py-3 rounded-xl font-bold text-lg shadow-xl ${
+        isCorrect ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'
+      }`;
+      
+      toast.classList.remove('hidden');
+      toast.classList.add('feedback-toast');
+      
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 1500);
+    }
+
+    function updateProgress() {
+      const progress = (gameState.sorted.length / animals.length) * 100;
+      document.getElementById('progressBar').style.width = progress + '%';
+      document.getElementById('progressText').textContent = `${gameState.sorted.length}/${animals.length}`;
+      document.getElementById('correctCount').textContent = gameState.correct;
+      document.getElementById('wrongCount').textContent = gameState.wrong;
+    }
+
+    function showVictory() {
+      const accuracy = Math.round((gameState.correct / (gameState.correct + gameState.wrong)) * 100);
+      document.getElementById('finalScore').textContent = `${gameState.correct} riktige, ${gameState.wrong} feil (${accuracy}%)`;
+      document.getElementById('victoryScreen').classList.remove('hidden');
+      
+      // Confetti
+      const container = document.getElementById('confettiContainer');
+      const emojis = ['🎉', '⭐', '🌟', '✨', '🎊'];
+      for (let i = 0; i < 20; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.top = Math.random() * 50 + '%';
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+        confetti.style.fontSize = (Math.random() * 20 + 15) + 'px';
+        container.appendChild(confetti);
+      }
+    }
+
+    function resetGame() {
+      gameState = { sorted: [], correct: 0, wrong: 0 };
+      document.querySelectorAll('.sorted-animals').forEach(zone => zone.innerHTML = '');
+      document.getElementById('victoryScreen').classList.add('hidden');
+      document.getElementById('confettiContainer').innerHTML = '';
+      updateProgress();
+      renderAnimals();
+    }
+
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      
+      document.getElementById('gameTitle').textContent = config.game_title || defaultConfig.game_title;
+      
+      const fontFamily = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `${fontFamily}, Nunito, sans-serif`;
+    }
+
+    document.getElementById('resetBtn').addEventListener('click', resetGame);
+    document.getElementById('playAgainBtn').addEventListener('click', resetGame);
+
+    // Initialize
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (cfg) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ['game_title', cfg.game_title || defaultConfig.game_title],
+          ['success_message', cfg.success_message || defaultConfig.success_message],
+          ['error_message', cfg.error_message || defaultConfig.error_message]
+        ])
+      });
+    }
+
+    renderAnimals();
+    updateProgress();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1f5d1a548a0731',t:'MTc2OTA4ODE4My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
