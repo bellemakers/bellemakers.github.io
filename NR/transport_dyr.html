@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="no" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dyrs Gassutveksling og Sirkulasjon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Nunito', sans-serif;
+    }
+    .animal-card {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .animal-card:hover {
+      transform: translateY(-4px) scale(1.02);
+    }
+    .filter-btn {
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover {
+      transform: scale(1.05);
+    }
+    .filter-btn.active {
+      transform: scale(1.05);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    .badge {
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .section-header {
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+      backdrop-filter: blur(10px);
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);">
+   <div class="max-w-6xl mx-auto px-4 py-8"><!-- Header -->
+    <header class="text-center mb-8">
+     <h1 id="main-title" class="text-3xl md:text-4xl font-extrabold text-white mb-2" style="text-shadow: 0 2px 10px rgba(0,0,0,0.3);">🦎 Dyrs Gassutveksling &amp; Sirkulasjon</h1>
+     <p class="text-blue-200 text-lg">Utforsk hvordan ulike dyr puster og sirkulerer blod</p>
+    </header><!-- Legend -->
+    <div class="section-header rounded-2xl p-4 mb-6 border border-white/10">
+     <h2 class="text-white font-bold mb-3 text-center">📖 Forklaring</h2>
+     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 text-sm">
+      <div class="flex items-center gap-2 bg-pink-500/20 rounded-lg px-3 py-2"><span class="w-3 h-3 rounded-full bg-pink-400"></span> <span class="text-pink-200">Hud</span>
+      </div>
+      <div class="flex items-center gap-2 bg-cyan-500/20 rounded-lg px-3 py-2"><span class="w-3 h-3 rounded-full bg-cyan-400"></span> <span class="text-cyan-200">Gjeller</span>
+      </div>
+      <div class="flex items-center gap-2 bg-red-500/20 rounded-lg px-3 py-2"><span class="w-3 h-3 rounded-full bg-red-400"></span> <span class="text-red-200">Lunger</span>
+      </div>
+      <div class="flex items-center gap-2 bg-amber-500/20 rounded-lg px-3 py-2"><span class="w-3 h-3 rounded-full bg-amber-400"></span> <span class="text-amber-200">Åpent</span>
+      </div>
+      <div class="flex items-center gap-2 bg-emerald-500/20 rounded-lg px-3 py-2"><span class="w-3 h-3 rounded-full bg-emerald-400"></span> <span class="text-emerald-200">Lukket</span>
+      </div>
+      <div class="flex items-center gap-2 bg-violet-500/20 rounded-lg px-3 py-2"><span class="w-3 h-3 rounded-full bg-violet-400"></span> <span class="text-violet-200">Dobbelt</span>
+      </div>
+     </div>
+    </div><!-- Filters -->
+    <div class="mb-6">
+     <h3 class="text-white font-semibold mb-3 text-center">🔍 Filtrer etter system</h3>
+     <div class="flex flex-wrap justify-center gap-2"><button onclick="setFilter('all')" class="filter-btn active px-4 py-2 rounded-full text-sm font-semibold bg-white text-gray-800" data-filter="all"> Alle dyr </button> <button onclick="setFilter('hud')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-pink-500/30 text-pink-200 border border-pink-400/50" data-filter="hud"> 🫧 Hudpusting </button> <button onclick="setFilter('gjeller')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-cyan-500/30 text-cyan-200 border border-cyan-400/50" data-filter="gjeller"> 🐟 Gjeller </button> <button onclick="setFilter('lunger')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-red-500/30 text-red-200 border border-red-400/50" data-filter="lunger"> 🫁 Lunger </button> <button onclick="setFilter('aapent')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-amber-500/30 text-amber-200 border border-amber-400/50" data-filter="aapent"> 💛 Åpent system </button> <button onclick="setFilter('lukket')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-emerald-500/30 text-emerald-200 border border-emerald-400/50" data-filter="lukket"> 💚 Lukket system </button> <button onclick="setFilter('enkelt')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-blue-500/30 text-blue-200 border border-blue-400/50" data-filter="enkelt"> 🔵 Enkelt sirkulasjon </button> <button onclick="setFilter('dobbelt')" class="filter-btn px-4 py-2 rounded-full text-sm font-semibold bg-violet-500/30 text-violet-200 border border-violet-400/50" data-filter="dobbelt"> 💜 Dobbelt sirkulasjon </button>
+     </div>
+    </div><!-- Animal Grid -->
+    <div id="animal-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"><!-- Cards will be generated by JS -->
+    </div><!-- Info Panel -->
+    <div id="info-panel" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50" onclick="closeInfo(event)">
+     <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-6 max-w-lg w-full border border-white/10 shadow-2xl" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-start mb-4">
+       <div class="text-5xl" id="info-emoji"></div><button onclick="closeInfo()" class="text-white/50 hover:text-white text-2xl">×</button>
+      </div>
+      <h3 id="info-name" class="text-2xl font-bold text-white mb-2"></h3>
+      <p id="info-latin" class="text-blue-300 italic mb-4"></p>
+      <div id="info-badges" class="flex flex-wrap gap-2 mb-4"></div>
+      <p id="info-description" class="text-gray-300 leading-relaxed"></p>
+     </div>
+    </div><!-- Statistics -->
+    <div class="mt-8 section-header rounded-2xl p-4 border border-white/10">
+     <h3 class="text-white font-bold mb-3 text-center">📊 Statistikk</h3>
+     <div id="stats" class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const animals = [
+      { name: "Meitemark", latin: "Lumbricus terrestris", emoji: "🪱", gas: ["hud"], sirk: "lukket", sirkType: "enkelt", desc: "Meitemarken puster gjennom sin fuktige hud. Oksygen diffunderer direkte inn i blodet som sirkulerer i et lukket system med fem 'hjerter'." },
+      { name: "Frosk", latin: "Rana temporaria", emoji: "🐸", gas: ["hud", "lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Frosker bruker både lunger og hud til gassutveksling. De har et tre-kammeret hjerte med delvis blanding av oksygenrikt og oksygenfattig blod." },
+      { name: "Salamander", latin: "Salamandra salamandra", emoji: "🦎", gas: ["hud", "lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Salamandere kan puste gjennom huden og har primitive lunger. Noen arter mangler lunger helt og er helt avhengige av hudpusting." },
+      { name: "Laks", latin: "Salmo salar", emoji: "🐟", gas: ["gjeller"], sirk: "lukket", sirkType: "enkelt", desc: "Laksen bruker gjeller til å trekke ut oksygen fra vann. Blodet passerer hjertet kun én gang per runde (enkelt sirkulasjon)." },
+      { name: "Hai", latin: "Selachimorpha", emoji: "🦈", gas: ["gjeller"], sirk: "lukket", sirkType: "enkelt", desc: "Haier har 5-7 gjellespalter og må svømme konstant for å presse vann over gjellene. De har et to-kammeret hjerte." },
+      { name: "Ørn", latin: "Aquila chrysaetos", emoji: "🦅", gas: ["lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Fugler har svært effektive lunger med luftsekker som gir kontinuerlig oksygenopptak. Fire-kammeret hjerte sikrer fullstendig separasjon av blod." },
+      { name: "Menneske", latin: "Homo sapiens", emoji: "🧑", gas: ["lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Mennesker har lunger med millioner av alveoler for gassutveksling. Fire-kammeret hjerte gir effektiv dobbelt sirkulasjon." },
+      { name: "Bie", latin: "Apis mellifera", emoji: "🐝", gas: ["trakeer"], sirk: "aapent", sirkType: "enkelt", desc: "Bier har et åpent sirkulasjonssystem der hemolymfe bader organene direkte. Gassutveksling skjer via trakeer - et nettverk av luftrør." },
+      { name: "Edderkopp", latin: "Araneae", emoji: "🕷️", gas: ["boklunger"], sirk: "aapent", sirkType: "enkelt", desc: "Edderkopper har boklunger - foldede strukturer som ligner boksider. De har åpent sirkulasjonssystem med hemolymfe." },
+      { name: "Krabbe", latin: "Brachyura", emoji: "🦀", gas: ["gjeller"], sirk: "aapent", sirkType: "enkelt", desc: "Krabber har gjeller som fungerer i vann. De har åpent sirkulasjonssystem der hemolymfe strømmer fritt mellom organene." },
+      { name: "Blekksprut", latin: "Octopus vulgaris", emoji: "🐙", gas: ["gjeller"], sirk: "lukket", sirkType: "enkelt", desc: "Blekkspruten har et lukket sirkulasjonssystem - uvanlig for bløtdyr. De har tre hjerter og blått blod med kobber." },
+      { name: "Skilpadde", latin: "Testudines", emoji: "🐢", gas: ["lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Skilpadder har lunger og kan også ta opp noe oksygen gjennom kloakken. De har et tre-kammeret hjerte med delvis septum." },
+      { name: "Hval", latin: "Cetacea", emoji: "🐋", gas: ["lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Hvaler er pattedyr med svært effektive lunger. De kan holde pusten lenge takket være høyt myoglobininnhold i musklene." },
+      { name: "Sommerfugl", latin: "Lepidoptera", emoji: "🦋", gas: ["trakeer"], sirk: "aapent", sirkType: "enkelt", desc: "Sommerfugler har trakésystem for gassutveksling og åpent sirkulasjonssystem. Hemolymfe transporterer næringsstoffer, ikke oksygen." },
+      { name: "Slange", latin: "Serpentes", emoji: "🐍", gas: ["lunger"], sirk: "lukket", sirkType: "dobbelt", desc: "Slanger har én fungerende lunge (høyre). De har et tre-kammeret hjerte, men noen arter har nesten fullstendig delt ventrikkel." },
+      { name: "Sjøstjerne", latin: "Asteroidea", emoji: "⭐", gas: ["hud"], sirk: "ingen", sirkType: "ingen", desc: "Sjøstjerner har ikke blodsirkulasjon. De bruker et vannkanalsystem og gassutveksling skjer gjennom papulaer (hudgjeller)." }
+    ];
+
+    let currentFilter = 'all';
+
+    const defaultConfig = {
+      main_title: "🦎 Dyrs Gassutveksling & Sirkulasjon",
+      primary_color: "#1a1a2e",
+      text_color: "#ffffff",
+      accent_color: "#60a5fa"
+    };
+
+    let config = { ...defaultConfig };
+
+    function getGasColor(type) {
+      const colors = {
+        hud: { bg: "bg-pink-500/20", text: "text-pink-200", border: "border-pink-400/50" },
+        gjeller: { bg: "bg-cyan-500/20", text: "text-cyan-200", border: "border-cyan-400/50" },
+        lunger: { bg: "bg-red-500/20", text: "text-red-200", border: "border-red-400/50" },
+        trakeer: { bg: "bg-orange-500/20", text: "text-orange-200", border: "border-orange-400/50" },
+        boklunger: { bg: "bg-purple-500/20", text: "text-purple-200", border: "border-purple-400/50" }
+      };
+      return colors[type] || { bg: "bg-gray-500/20", text: "text-gray-200", border: "border-gray-400/50" };
+    }
+
+    function getSirkColor(type) {
+      return type === "aapent" 
+        ? { bg: "bg-amber-500/20", text: "text-amber-200", border: "border-amber-400/50" }
+        : type === "lukket"
+        ? { bg: "bg-emerald-500/20", text: "text-emerald-200", border: "border-emerald-400/50" }
+        : { bg: "bg-gray-500/20", text: "text-gray-200", border: "border-gray-400/50" };
+    }
+
+    function getSirkTypeColor(type) {
+      return type === "enkelt"
+        ? { bg: "bg-blue-500/20", text: "text-blue-200", border: "border-blue-400/50" }
+        : type === "dobbelt"
+        ? { bg: "bg-violet-500/20", text: "text-violet-200", border: "border-violet-400/50" }
+        : { bg: "bg-gray-500/20", text: "text-gray-200", border: "border-gray-400/50" };
+    }
+
+    function createAnimalCard(animal, index) {
+      const gasColors = animal.gas.map(g => getGasColor(g));
+      const sirkColor = getSirkColor(animal.sirk);
+      const sirkTypeColor = getSirkTypeColor(animal.sirkType);
+
+      return `
+        <div class="animal-card bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10 cursor-pointer hover:bg-white/10 hover:border-white/20"
+             onclick="showInfo(${index})"
+             data-gas="${animal.gas.join(',')}"
+             data-sirk="${animal.sirk}"
+             data-sirktype="${animal.sirkType}">
+          <div class="text-4xl mb-3 text-center">${animal.emoji}</div>
+          <h3 class="text-white font-bold text-center mb-1">${animal.name}</h3>
+          <p class="text-blue-300 text-xs text-center italic mb-3">${animal.latin}</p>
+          <div class="flex flex-wrap gap-1 justify-center">
+            ${animal.gas.map((g, i) => `
+              <span class="badge text-xs px-2 py-1 rounded-full ${gasColors[i].bg} ${gasColors[i].text} ${gasColors[i].border} border">
+                ${g === 'hud' ? '🫧' : g === 'gjeller' ? '🐟' : g === 'lunger' ? '🫁' : g === 'trakeer' ? '🌬️' : '📖'} ${g}
+              </span>
+            `).join('')}
+            ${animal.sirk !== 'ingen' ? `
+              <span class="badge text-xs px-2 py-1 rounded-full ${sirkColor.bg} ${sirkColor.text} ${sirkColor.border} border">
+                ${animal.sirk === 'aapent' ? '💛' : '💚'} ${animal.sirk}
+              </span>
+            ` : ''}
+            ${animal.sirkType !== 'ingen' ? `
+              <span class="badge text-xs px-2 py-1 rounded-full ${sirkTypeColor.bg} ${sirkTypeColor.text} ${sirkTypeColor.border} border">
+                ${animal.sirkType === 'enkelt' ? '🔵' : '💜'} ${animal.sirkType}
+              </span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAnimals() {
+      const grid = document.getElementById('animal-grid');
+      const filteredAnimals = animals.filter(animal => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'hud' || currentFilter === 'gjeller' || currentFilter === 'lunger') {
+          return animal.gas.includes(currentFilter);
+        }
+        if (currentFilter === 'aapent' || currentFilter === 'lukket') {
+          return animal.sirk === currentFilter;
+        }
+        if (currentFilter === 'enkelt' || currentFilter === 'dobbelt') {
+          return animal.sirkType === currentFilter;
+        }
+        return true;
+      });
+
+      grid.innerHTML = filteredAnimals.map((animal, i) => 
+        createAnimalCard(animal, animals.indexOf(animal))
+      ).join('');
+
+      updateStats();
+    }
+
+    function setFilter(filter) {
+      currentFilter = filter;
+      
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-white', 'text-gray-800');
+        if (btn.dataset.filter === filter) {
+          btn.classList.add('active');
+          if (filter === 'all') {
+            btn.classList.add('bg-white', 'text-gray-800');
+          }
+        }
+      });
+      
+      renderAnimals();
+    }
+
+    function showInfo(index) {
+      const animal = animals[index];
+      const panel = document.getElementById('info-panel');
+      
+      document.getElementById('info-emoji').textContent = animal.emoji;
+      document.getElementById('info-name').textContent = animal.name;
+      document.getElementById('info-latin').textContent = animal.latin;
+      document.getElementById('info-description').textContent = animal.desc;
+      
+      const badges = document.getElementById('info-badges');
+      const gasColors = animal.gas.map(g => getGasColor(g));
+      const sirkColor = getSirkColor(animal.sirk);
+      const sirkTypeColor = getSirkTypeColor(animal.sirkType);
+      
+      badges.innerHTML = `
+        ${animal.gas.map((g, i) => `
+          <span class="text-sm px-3 py-1 rounded-full ${gasColors[i].bg} ${gasColors[i].text} ${gasColors[i].border} border">
+            ${g === 'hud' ? '🫧 Hudpusting' : g === 'gjeller' ? '🐟 Gjeller' : g === 'lunger' ? '🫁 Lunger' : g === 'trakeer' ? '🌬️ Trakeer' : '📖 Boklunger'}
+          </span>
+        `).join('')}
+        ${animal.sirk !== 'ingen' ? `
+          <span class="text-sm px-3 py-1 rounded-full ${sirkColor.bg} ${sirkColor.text} ${sirkColor.border} border">
+            ${animal.sirk === 'aapent' ? '💛 Åpent sirkulasjon' : '💚 Lukket sirkulasjon'}
+          </span>
+        ` : ''}
+        ${animal.sirkType !== 'ingen' ? `
+          <span class="text-sm px-3 py-1 rounded-full ${sirkTypeColor.bg} ${sirkTypeColor.text} ${sirkTypeColor.border} border">
+            ${animal.sirkType === 'enkelt' ? '🔵 Enkelt sirkulasjon' : '💜 Dobbelt sirkulasjon'}
+          </span>
+        ` : ''}
+      `;
+      
+      panel.classList.remove('hidden');
+    }
+
+    function closeInfo(e) {
+      if (!e || e.target === document.getElementById('info-panel')) {
+        document.getElementById('info-panel').classList.add('hidden');
+      }
+    }
+
+    function updateStats() {
+      const stats = document.getElementById('stats');
+      const hudCount = animals.filter(a => a.gas.includes('hud')).length;
+      const gjellerCount = animals.filter(a => a.gas.includes('gjeller')).length;
+      const lungerCount = animals.filter(a => a.gas.includes('lunger')).length;
+      const aapentCount = animals.filter(a => a.sirk === 'aapent').length;
+      const lukketCount = animals.filter(a => a.sirk === 'lukket').length;
+      const enkeltCount = animals.filter(a => a.sirkType === 'enkelt').length;
+      const dobbeltCount = animals.filter(a => a.sirkType === 'dobbelt').length;
+
+      stats.innerHTML = `
+        <div class="bg-pink-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-pink-300">${hudCount}</div>
+          <div class="text-pink-200 text-sm">Hudpusting</div>
+        </div>
+        <div class="bg-cyan-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-cyan-300">${gjellerCount}</div>
+          <div class="text-cyan-200 text-sm">Gjeller</div>
+        </div>
+        <div class="bg-red-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-red-300">${lungerCount}</div>
+          <div class="text-red-200 text-sm">Lunger</div>
+        </div>
+        <div class="bg-amber-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-amber-300">${aapentCount}</div>
+          <div class="text-amber-200 text-sm">Åpent system</div>
+        </div>
+        <div class="bg-emerald-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-emerald-300">${lukketCount}</div>
+          <div class="text-emerald-200 text-sm">Lukket system</div>
+        </div>
+        <div class="bg-blue-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-blue-300">${enkeltCount}</div>
+          <div class="text-blue-200 text-sm">Enkelt sirk.</div>
+        </div>
+        <div class="bg-violet-500/20 rounded-xl p-3">
+          <div class="text-2xl font-bold text-violet-300">${dobbeltCount}</div>
+          <div class="text-violet-200 text-sm">Dobbelt sirk.</div>
+        </div>
+        <div class="bg-white/10 rounded-xl p-3">
+          <div class="text-2xl font-bold text-white">${animals.length}</div>
+          <div class="text-gray-300 text-sm">Totalt</div>
+        </div>
+      `;
+    }
+
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (cfg) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ["main_title", cfg.main_title || defaultConfig.main_title]
+        ])
+      });
+    }
+
+    renderAnimals();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1ec884b2350731',t:'MTc2OTA4MjA5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
