@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="no" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dyrequiz - Gassutveksling og Sirkulasjon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Fredoka', sans-serif;
+    }
+    .quiz-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .quiz-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+    .quiz-btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .quiz-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .option-btn {
+      transition: all 0.2s ease;
+    }
+    .option-btn:hover:not(.correct):not(.incorrect):not(:disabled) {
+      transform: scale(1.02);
+      background: rgba(255,255,255,0.15);
+    }
+    .option-btn.correct {
+      background: rgba(34, 197, 94, 0.3) !important;
+      border-color: #22c55e !important;
+      animation: correctPulse 0.5s ease;
+    }
+    .option-btn.incorrect {
+      background: rgba(239, 68, 68, 0.3) !important;
+      border-color: #ef4444 !important;
+      animation: shake 0.4s ease;
+    }
+    @keyframes correctPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease;
+    }
+    .progress-bar {
+      transition: width 0.4s ease;
+    }
+    .spinner {
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top: 3px solid white;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app-wrapper" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);">
+   <div class="max-w-4xl mx-auto px-4 py-8"><!-- Start Screen -->
+    <div id="start-screen" class="fade-in">
+     <div class="text-center mb-8">
+      <div class="text-6xl mb-4">
+       🧬🐾
+      </div>
+      <h1 id="quiz-title" class="text-4xl md:text-5xl font-bold text-white mb-3" style="text-shadow: 0 2px 15px rgba(0,0,0,0.5);">Dyrequiz: Gassutveksling &amp; Sirkulasjon</h1>
+      <p class="text-blue-200 text-lg">Test kunnskapen din om hvordan dyr puster og sirkulerer blod!</p>
+     </div>
+     <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl mb-6">
+      <h2 class="text-2xl font-bold text-white mb-4">📋 Slik fungerer quizen:</h2>
+      <ul class="space-y-3 text-white/90">
+       <li class="flex items-start gap-3"><span class="text-2xl">✅</span> <span>Velg riktig gassutvekslingssystem og sirkulasjonssystem for hvert dyr</span></li>
+       <li class="flex items-start gap-3"><span class="text-2xl">🎯</span> <span>10 spørsmål totalt - få ett poeng for hvert riktig svar</span></li>
+       <li class="flex items-start gap-3"><span class="text-2xl">⏱️</span> <span>Ingen tidsbegrensning - ta deg god tid til å tenke!</span></li>
+       <li class="flex items-start gap-3"><span class="text-2xl">🏆</span> <span>Se hvor du rangerer på topplisten etter endt quiz</span></li>
+      </ul>
+     </div>
+     <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 shadow-2xl"><label for="player-name" class="block text-white font-semibold mb-2">Hva heter du?</label> <input type="text" id="player-name" placeholder="Skriv inn navnet ditt..." class="w-full px-4 py-3 rounded-xl bg-white/20 border-2 border-white/30 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:bg-white/25 transition-all mb-4"> <button id="start-btn" onclick="startQuiz()" class="quiz-btn w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 px-8 rounded-xl text-lg shadow-lg"> <span id="start-btn-text">🚀 Start Quiz</span> </button>
+     </div>
+    </div><!-- Quiz Screen -->
+    <div id="quiz-screen" class="hidden"><!-- Progress Bar -->
+     <div class="mb-6">
+      <div class="flex justify-between text-white mb-2"><span class="font-semibold">Spørsmål <span id="current-q">1</span>/10</span> <span class="font-semibold">Poeng: <span id="score">0</span></span>
+      </div>
+      <div class="w-full bg-white/20 rounded-full h-3 overflow-hidden">
+       <div id="progress-bar" class="progress-bar bg-gradient-to-r from-green-400 to-blue-500 h-full rounded-full" style="width: 10%"></div>
+      </div>
+     </div><!-- Question Card -->
+     <div id="question-card" class="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl mb-6 fade-in">
+      <div class="text-center mb-6">
+       <div id="animal-emoji" class="text-7xl mb-4">
+        🐸
+       </div>
+       <h2 id="animal-name" class="text-3xl font-bold text-white mb-2">Frosk</h2>
+       <p class="text-blue-200 italic" id="animal-latin">Rana temporaria</p>
+      </div>
+      <div class="space-y-6"><!-- Gas Exchange Question -->
+       <div>
+        <h3 class="text-xl font-semibold text-white mb-3">🫧 Hvilket gassutvekslingssystem bruker dette dyret?</h3>
+        <div id="gas-options" class="space-y-2"><!-- Options will be inserted here -->
+        </div>
+       </div><!-- Circulation Question -->
+       <div>
+        <h3 class="text-xl font-semibold text-white mb-3">❤️ Hvilket sirkulasjonssystem har dette dyret?</h3>
+        <div id="sirk-options" class="space-y-2"><!-- Options will be inserted here -->
+        </div>
+       </div><!-- Circulation Type Question -->
+       <div id="sirk-type-section">
+        <h3 class="text-xl font-semibold text-white mb-3">🔄 Hvilken type sirkulasjon har dette dyret?</h3>
+        <div id="sirk-type-options" class="space-y-2"><!-- Options will be inserted here -->
+        </div>
+       </div>
+      </div>
+      <div id="feedback" class="hidden mt-6 p-4 rounded-xl"></div><button id="next-btn" onclick="nextQuestion()" class="quiz-btn hidden w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 px-6 rounded-xl text-lg shadow-lg mt-6"> Neste spørsmål → </button>
+     </div>
+     <div id="explanation" class="hidden bg-blue-500/20 backdrop-blur-md rounded-2xl p-6 border border-blue-400/30">
+      <h3 class="text-lg font-bold text-blue-200 mb-2">💡 Visste du at:</h3>
+      <p id="explanation-text" class="text-white/90"></p>
+     </div>
+    </div><!-- Results Screen -->
+    <div id="results-screen" class="hidden fade-in">
+     <div class="text-center mb-8">
+      <div id="result-emoji" class="text-8xl mb-4">
+       🎉
+      </div>
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-3">Gratulerer!</h1>
+      <p class="text-xl text-blue-200">Du fullførte quizen</p>
+     </div>
+     <div class="bg-white/10 backdrop-blur-md rounded-3xl p-8 border border-white/20 shadow-2xl mb-6 text-center">
+      <div class="text-6xl font-bold text-white mb-2">
+       <span id="final-score">0</span>/10
+      </div>
+      <p class="text-2xl text-blue-200 mb-4">Riktige svar</p>
+      <div id="score-message" class="text-lg text-white/80"></div>
+     </div>
+     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><button onclick="restartQuiz()" class="quiz-btn bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold py-4 px-6 rounded-xl text-lg shadow-lg"> 🔄 Prøv igjen </button> <button onclick="showLeaderboard()" class="quiz-btn bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold py-4 px-6 rounded-xl text-lg shadow-lg"> 🏆 Se toppliste </button>
+     </div><!-- Leaderboard -->
+     <div id="leaderboard" class="hidden bg-white/10 backdrop-blur-md rounded-3xl p-6 border border-white/20 shadow-2xl">
+      <h2 id="leaderboard-title" class="text-2xl font-bold text-white mb-4 text-center">🏆 Toppliste</h2>
+      <div id="leaderboard-list" class="space-y-2"><!-- Leaderboard entries will be inserted here -->
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const quizData = [
+      { 
+        name: "Frosk", 
+        latin: "Rana temporaria", 
+        emoji: "🐸", 
+        gas: ["hud", "lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Frosker kan puste både gjennom huden og lungene! De har et tre-kammeret hjerte som delvis blander oksygenrikt og oksygenfattig blod."
+      },
+      { 
+        name: "Laks", 
+        latin: "Salmo salar", 
+        emoji: "🐟", 
+        gas: ["gjeller"], 
+        sirk: "lukket", 
+        sirkType: "enkelt",
+        fact: "Laksen bruker gjeller til å trekke ut oksygen fra vann. Blodet passerer hjertet kun én gang per sirkulasjonsrunde."
+      },
+      { 
+        name: "Menneske", 
+        latin: "Homo sapiens", 
+        emoji: "🧑", 
+        gas: ["lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Mennesker har et fire-kammeret hjerte som gir fullstendig separasjon mellom oksygenrikt og oksygenfattig blod. Dette er svært effektivt!"
+      },
+      { 
+        name: "Bie", 
+        latin: "Apis mellifera", 
+        emoji: "🐝", 
+        gas: ["trakeer"], 
+        sirk: "aapent", 
+        sirkType: "enkelt",
+        fact: "Bier har et åpent sirkulasjonssystem der hemolymfe bader organene direkte. Gassutveksling skjer via trakeer - små luftrør."
+      },
+      { 
+        name: "Meitemark", 
+        latin: "Lumbricus terrestris", 
+        emoji: "🪱", 
+        gas: ["hud"], 
+        sirk: "lukket", 
+        sirkType: "enkelt",
+        fact: "Meitemarken puster gjennom sin fuktige hud! Den har fem par 'hjerter' som pumper blod gjennom et lukket system."
+      },
+      { 
+        name: "Hai", 
+        latin: "Selachimorpha", 
+        emoji: "🦈", 
+        gas: ["gjeller"], 
+        sirk: "lukket", 
+        sirkType: "enkelt",
+        fact: "Haier har 5-7 gjellespalter og må svømme konstant for å presse vann over gjellene. De har et to-kammeret hjerte."
+      },
+      { 
+        name: "Ørn", 
+        latin: "Aquila chrysaetos", 
+        emoji: "🦅", 
+        gas: ["lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Fugler har de mest effektive lungene i dyreriket! De har luftsekker som gir kontinuerlig oksygenopptak selv når de puster ut."
+      },
+      { 
+        name: "Edderkopp", 
+        latin: "Araneae", 
+        emoji: "🕷️", 
+        gas: ["boklunger"], 
+        sirk: "aapent", 
+        sirkType: "enkelt",
+        fact: "Edderkopper har boklunger - foldede strukturer som ligner boksider. De har åpent sirkulasjonssystem med hemolymfe."
+      },
+      { 
+        name: "Krabbe", 
+        latin: "Brachyura", 
+        emoji: "🦀", 
+        gas: ["gjeller"], 
+        sirk: "aapent", 
+        sirkType: "enkelt",
+        fact: "Krabber har gjeller som fungerer i vann, men åpent sirkulasjonssystem der hemolymfe strømmer fritt mellom organene."
+      },
+      { 
+        name: "Salamander", 
+        latin: "Salamandra salamandra", 
+        emoji: "🦎", 
+        gas: ["hud", "lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Salamandere kan puste gjennom huden og har primitive lunger. Noen arter mangler lunger helt og er helt avhengige av hudpusting!"
+      },
+      { 
+        name: "Blekksprut", 
+        latin: "Octopus vulgaris", 
+        emoji: "🐙", 
+        gas: ["gjeller"], 
+        sirk: "lukket", 
+        sirkType: "enkelt",
+        fact: "Blekkspruten har et lukket sirkulasjonssystem - veldig uvanlig for bløtdyr! Den har tre hjerter og blått blod med kobber."
+      },
+      { 
+        name: "Skilpadde", 
+        latin: "Testudines", 
+        emoji: "🐢", 
+        gas: ["lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Skilpadder har lunger og kan ta opp noe oksygen gjennom kloakken når de er under vann. Smart tilpasning!"
+      },
+      { 
+        name: "Sommerfugl", 
+        latin: "Lepidoptera", 
+        emoji: "🦋", 
+        gas: ["trakeer"], 
+        sirk: "aapent", 
+        sirkType: "enkelt",
+        fact: "Sommerfugler har trakésystem for gassutveksling. Hemolymfe transporterer næringsstoffer, men ikke oksygen!"
+      },
+      { 
+        name: "Slange", 
+        latin: "Serpentes", 
+        emoji: "🐍", 
+        gas: ["lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Slanger har bare én fungerende lunge (høyre)! Den er forlenget for å passe inn i deres smale kropp."
+      },
+      { 
+        name: "Hval", 
+        latin: "Cetacea", 
+        emoji: "🐋", 
+        gas: ["lunger"], 
+        sirk: "lukket", 
+        sirkType: "dobbelt",
+        fact: "Hvaler kan holde pusten i opptil 90 minutter takket være høyt myoglobininnhold i musklene som lagrer oksygen."
+      }
+    ];
+
+    const gasOptions = [
+      { value: "hud", label: "🫧 Hud", display: "Hudpusting" },
+      { value: "gjeller", label: "🐟 Gjeller", display: "Gjeller" },
+      { value: "lunger", label: "🫁 Lunger", display: "Lunger" },
+      { value: "trakeer", label: "🌬️ Trakeer", display: "Trakeer" },
+      { value: "boklunger", label: "📖 Boklunger", display: "Boklunger" },
+      { value: "hud_lunger", label: "🫧🫁 Hud + Lunger", display: "Hud og Lunger" }
+    ];
+
+    const sirkOptions = [
+      { value: "aapent", label: "💛 Åpent sirkulasjonssystem" },
+      { value: "lukket", label: "💚 Lukket sirkulasjonssystem" }
+    ];
+
+    const sirkTypeOptions = [
+      { value: "enkelt", label: "🔵 Enkelt sirkulasjon" },
+      { value: "dobbelt", label: "💜 Dobbelt sirkulasjon" }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedGas = null;
+    let selectedSirk = null;
+    let selectedSirkType = null;
+    let questions = [];
+    let playerName = "";
+    let isSubmitting = false;
+    let allScores = [];
+
+    const defaultConfig = {
+      quiz_title: "Dyrequiz: Gassutveksling & Sirkulasjon",
+      start_button_text: "🚀 Start Quiz",
+      leaderboard_title: "🏆 Toppliste",
+      background_color: "#0f172a",
+      card_color: "#1e293b",
+      text_color: "#ffffff",
+      accent_color: "#3b82f6",
+      button_color: "#6366f1"
+    };
+
+    let config = { ...defaultConfig };
+
+    function shuffleArray(array) {
+      const newArray = [...array];
+      for (let i = newArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+      }
+      return newArray;
+    }
+
+    function startQuiz() {
+      const nameInput = document.getElementById('player-name');
+      playerName = nameInput.value.trim();
+      
+      if (!playerName) {
+        const feedback = document.createElement('div');
+        feedback.className = 'mt-3 p-3 bg-red-500/30 border border-red-400 rounded-lg text-white text-center';
+        feedback.textContent = '⚠️ Vennligst skriv inn navnet ditt først!';
+        nameInput.parentElement.insertBefore(feedback, nameInput.parentElement.lastElementChild);
+        setTimeout(() => feedback.remove(), 3000);
+        return;
+      }
+
+      questions = shuffleArray(quizData).slice(0, 10);
+      currentQuestionIndex = 0;
+      score = 0;
+      
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.remove('hidden');
+      
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      if (currentQuestionIndex >= questions.length) {
+        showResults();
+        return;
+      }
+
+      const question = questions[currentQuestionIndex];
+      selectedGas = null;
+      selectedSirk = null;
+      selectedSirkType = null;
+
+      document.getElementById('current-q').textContent = currentQuestionIndex + 1;
+      document.getElementById('score').textContent = score;
+      document.getElementById('progress-bar').style.width = ((currentQuestionIndex + 1) / questions.length * 100) + '%';
+
+      document.getElementById('animal-emoji').textContent = question.emoji;
+      document.getElementById('animal-name').textContent = question.name;
+      document.getElementById('animal-latin').textContent = question.latin;
+
+      // Load gas options
+      const gasOptionsDiv = document.getElementById('gas-options');
+      const shuffledGasOptions = shuffleArray(gasOptions);
+      gasOptionsDiv.innerHTML = shuffledGasOptions.map(opt => `
+        <button 
+          onclick="selectGas('${opt.value}')" 
+          data-gas="${opt.value}"
+          class="option-btn w-full text-left px-4 py-3 bg-white/10 hover:bg-white/15 border-2 border-white/20 rounded-xl text-white font-medium transition-all"
+        >
+          ${opt.label}
+        </button>
+      `).join('');
+
+      // Load sirk options
+      const sirkOptionsDiv = document.getElementById('sirk-options');
+      const shuffledSirkOptions = shuffleArray(sirkOptions);
+      sirkOptionsDiv.innerHTML = shuffledSirkOptions.map(opt => `
+        <button 
+          onclick="selectSirk('${opt.value}')" 
+          data-sirk="${opt.value}"
+          class="option-btn w-full text-left px-4 py-3 bg-white/10 hover:bg-white/15 border-2 border-white/20 rounded-xl text-white font-medium transition-all"
+        >
+          ${opt.label}
+        </button>
+      `).join('');
+
+      // Load sirk type options
+      const sirkTypeOptionsDiv = document.getElementById('sirk-type-options');
+      const shuffledSirkTypeOptions = shuffleArray(sirkTypeOptions);
+      sirkTypeOptionsDiv.innerHTML = shuffledSirkTypeOptions.map(opt => `
+        <button 
+          onclick="selectSirkType('${opt.value}')" 
+          data-sirktype="${opt.value}"
+          class="option-btn w-full text-left px-4 py-3 bg-white/10 hover:bg-white/15 border-2 border-white/20 rounded-xl text-white font-medium transition-all"
+        >
+          ${opt.label}
+        </button>
+      `).join('');
+
+      document.getElementById('feedback').classList.add('hidden');
+      document.getElementById('explanation').classList.add('hidden');
+      document.getElementById('next-btn').classList.add('hidden');
+    }
+
+    function selectGas(value) {
+      if (selectedGas !== null) return;
+      
+      selectedGas = value;
+      const buttons = document.querySelectorAll('[data-gas]');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.gas === value) {
+          btn.classList.add('border-blue-400', 'bg-blue-500/30');
+        }
+      });
+      
+      checkAnswer();
+    }
+
+    function selectSirk(value) {
+      if (selectedSirk !== null) return;
+      
+      selectedSirk = value;
+      const buttons = document.querySelectorAll('[data-sirk]');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.sirk === value) {
+          btn.classList.add('border-blue-400', 'bg-blue-500/30');
+        }
+      });
+      
+      checkAnswer();
+    }
+
+    function selectSirkType(value) {
+      if (selectedSirkType !== null) return;
+      
+      selectedSirkType = value;
+      const buttons = document.querySelectorAll('[data-sirktype]');
+      buttons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.dataset.sirktype === value) {
+          btn.classList.add('border-blue-400', 'bg-blue-500/30');
+        }
+      });
+      
+      checkAnswer();
+    }
+
+    function checkAnswer() {
+      if (selectedGas === null || selectedSirk === null || selectedSirkType === null) return;
+
+      const question = questions[currentQuestionIndex];
+      
+      // Check gas answer
+      let gasCorrect = false;
+      if (selectedGas === "hud_lunger") {
+        gasCorrect = question.gas.includes("hud") && question.gas.includes("lunger");
+      } else {
+        gasCorrect = question.gas.length === 1 && question.gas[0] === selectedGas;
+      }
+
+      const sirkCorrect = question.sirk === selectedSirk;
+      const sirkTypeCorrect = question.sirkType === selectedSirkType;
+
+      // Visual feedback for gas
+      const gasButtons = document.querySelectorAll('[data-gas]');
+      gasButtons.forEach(btn => {
+        const btnValue = btn.dataset.gas;
+        if (btnValue === "hud_lunger" && question.gas.includes("hud") && question.gas.includes("lunger")) {
+          btn.classList.add('correct');
+        } else if (question.gas.length === 1 && question.gas[0] === btnValue) {
+          btn.classList.add('correct');
+        } else if (btnValue === selectedGas && !gasCorrect) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      // Visual feedback for sirk
+      const sirkButtons = document.querySelectorAll('[data-sirk]');
+      sirkButtons.forEach(btn => {
+        if (btn.dataset.sirk === question.sirk) {
+          btn.classList.add('correct');
+        } else if (btn.dataset.sirk === selectedSirk && !sirkCorrect) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      // Visual feedback for sirk type
+      const sirkTypeButtons = document.querySelectorAll('[data-sirktype]');
+      sirkTypeButtons.forEach(btn => {
+        if (btn.dataset.sirktype === question.sirkType) {
+          btn.classList.add('correct');
+        } else if (btn.dataset.sirktype === selectedSirkType && !sirkTypeCorrect) {
+          btn.classList.add('incorrect');
+        }
+      });
+
+      const allCorrect = gasCorrect && sirkCorrect && sirkTypeCorrect;
+      
+      if (allCorrect) {
+        score++;
+        document.getElementById('score').textContent = score;
+      }
+
+      // Show feedback
+      const feedback = document.getElementById('feedback');
+      feedback.classList.remove('hidden', 'bg-green-500/30', 'border-green-400', 'bg-red-500/30', 'border-red-400');
+      
+      if (allCorrect) {
+        feedback.classList.add('bg-green-500/30', 'border-2', 'border-green-400');
+        feedback.innerHTML = '<div class="text-center"><div class="text-4xl mb-2">🎉</div><div class="text-white font-bold text-lg">Perfekt! Alle svar er riktige!</div></div>';
+      } else {
+        feedback.classList.add('bg-red-500/30', 'border-2', 'border-red-400');
+        let wrongAnswers = [];
+        if (!gasCorrect) wrongAnswers.push('gassutveksling');
+        if (!sirkCorrect) wrongAnswers.push('sirkulasjonssystem');
+        if (!sirkTypeCorrect) wrongAnswers.push('sirkulasjonstype');
+        feedback.innerHTML = `<div class="text-center"><div class="text-4xl mb-2">😅</div><div class="text-white font-bold text-lg">Ikke helt riktig! Feil på: ${wrongAnswers.join(', ')}</div></div>`;
+      }
+
+      // Show explanation
+      const explanation = document.getElementById('explanation');
+      document.getElementById('explanation-text').textContent = question.fact;
+      explanation.classList.remove('hidden');
+
+      document.getElementById('next-btn').classList.remove('hidden');
+    }
+
+    function nextQuestion() {
+      currentQuestionIndex++;
+      loadQuestion();
+    }
+
+    async function showResults() {
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('results-screen').classList.remove('hidden');
+
+      const percentage = (score / questions.length) * 100;
+      
+      let emoji = '🎉';
+      let message = '';
+      
+      if (percentage === 100) {
+        emoji = '🏆';
+        message = 'Perfekt! Du er en mester innen biologi!';
+      } else if (percentage >= 80) {
+        emoji = '⭐';
+        message = 'Utmerket! Du har god kunnskap om dyrs systemer!';
+      } else if (percentage >= 60) {
+        emoji = '👍';
+        message = 'Bra jobbet! Du er godt på vei!';
+      } else if (percentage >= 40) {
+        emoji = '💪';
+        message = 'Ikke verst! Det er rom for forbedring!';
+      } else {
+        emoji = '📚';
+        message = 'Fortsett å lære! Prøv igjen for å bli bedre!';
+      }
+
+      document.getElementById('result-emoji').textContent = emoji;
+      document.getElementById('final-score').textContent = score;
+      document.getElementById('score-message').textContent = message;
+
+      // Save to leaderboard
+      if (allScores.length < 999) {
+        await saveScore();
+      } else {
+        showLimitWarning();
+      }
+    }
+
+    async function saveScore() {
+      if (isSubmitting) return;
+      
+      isSubmitting = true;
+      const startBtn = document.getElementById('start-btn');
+      const originalText = startBtn.innerHTML;
+      startBtn.innerHTML = '<div class="spinner mx-auto"></div>';
+      startBtn.disabled = true;
+
+      const result = await window.dataSdk.create({
+        player_name: playerName,
+        score: score,
+        total_questions: questions.length,
+        timestamp: new Date().toISOString()
+      });
+
+      startBtn.innerHTML = originalText;
+      startBtn.disabled = false;
+      isSubmitting = false;
+
+      if (!result.isOk) {
+        const errorMsg = document.createElement('div');
+        errorMsg.className = 'mt-3 p-3 bg-red-500/30 border border-red-400 rounded-lg text-white text-center';
+        errorMsg.textContent = '❌ Kunne ikke lagre resultatet. Prøv igjen.';
+        document.getElementById('results-screen').appendChild(errorMsg);
+        setTimeout(() => errorMsg.remove(), 3000);
+      }
+    }
+
+    function showLimitWarning() {
+      const warning = document.createElement('div');
+      warning.className = 'mt-4 p-4 bg-amber-500/30 border-2 border-amber-400 rounded-xl text-white text-center';
+      warning.innerHTML = '<div class="text-2xl mb-2">⚠️</div><div class="font-bold">Topplisten er full!</div><div class="text-sm mt-1">Maksimalt 999 resultater er nådd. Resultatet ditt ble ikke lagret.</div>';
+      document.getElementById('results-screen').appendChild(warning);
+    }
+
+    function showLeaderboard() {
+      const leaderboard = document.getElementById('leaderboard');
+      leaderboard.classList.remove('hidden');
+      
+      const sorted = [...allScores].sort((a, b) => b.score - a.score).slice(0, 10);
+      
+      const list = document.getElementById('leaderboard-list');
+      if (sorted.length === 0) {
+        list.innerHTML = '<div class="text-center text-white/60 py-4">Ingen resultater ennå</div>';
+      } else {
+        list.innerHTML = sorted.map((entry, index) => {
+          const medals = ['🥇', '🥈', '🥉'];
+          const medal = index < 3 ? medals[index] : `${index + 1}.`;
+          const isCurrentPlayer = entry.player_name === playerName && entry.timestamp === allScores[allScores.length - 1]?.timestamp;
+          
+          return `
+            <div class="flex items-center justify-between p-3 bg-white/10 rounded-xl border ${isCurrentPlayer ? 'border-yellow-400 bg-yellow-500/20' : 'border-white/10'}">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl w-8">${medal}</span>
+                <div>
+                  <div class="font-semibold text-white">${entry.player_name} ${isCurrentPlayer ? '(deg)' : ''}</div>
+                  <div class="text-xs text-white/60">${new Date(entry.timestamp).toLocaleDateString('no-NO', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+              </div>
+              <div class="text-2xl font-bold text-white">${entry.score}/${entry.total_questions}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    function restartQuiz() {
+      document.getElementById('results-screen').classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+      document.getElementById('player-name').value = playerName;
+      document.getElementById('leaderboard').classList.add('hidden');
+    }
+
+    const dataHandler = {
+      onDataChanged(data) {
+        allScores = data;
+      }
+    };
+
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      document.getElementById('quiz-title').textContent = config.quiz_title || defaultConfig.quiz_title;
+      document.getElementById('start-btn-text').textContent = config.start_button_text || defaultConfig.start_button_text;
+      document.getElementById('leaderboard-title').textContent = config.leaderboard_title || defaultConfig.leaderboard_title;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (cfg) => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ["quiz_title", cfg.quiz_title || defaultConfig.quiz_title],
+          ["start_button_text", cfg.start_button_text || defaultConfig.start_button_text],
+          ["leaderboard_title", cfg.leaderboard_title || defaultConfig.leaderboard_title]
+        ])
+      });
+    }
+
+    if (window.dataSdk) {
+      window.dataSdk.init(dataHandler);
+    }
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c1ef5de30ae0731',t:'MTc2OTA4Mzk1NS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
