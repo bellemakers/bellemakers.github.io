@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="no" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dyrefysiologi Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    * {
+      font-family: 'Nunito', sans-serif;
+    }
+    .card-gradient {
+      background: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%);
+      backdrop-filter: blur(10px);
+    }
+    .option-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .option-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px -5px rgba(0,0,0,0.15);
+    }
+    .correct-answer {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+      color: white !important;
+      border-color: #059669 !important;
+    }
+    .wrong-answer {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+      color: white !important;
+      border-color: #dc2626 !important;
+    }
+    .progress-fill {
+      transition: width 0.5s ease-out;
+    }
+    .fade-in {
+      animation: fadeIn 0.4s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .pulse-glow {
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 20px rgba(99, 102, 241, 0.3); }
+      50% { box-shadow: 0 0 40px rgba(99, 102, 241, 0.5); }
+    }
+    .animal-icon {
+      font-size: 3rem;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    }
+    .category-badge {
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full m-0 p-0">
+  <div id="app-wrapper" class="h-full w-full overflow-auto" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);"><!-- Start Screen -->
+   <div id="start-screen" class="min-h-full flex items-center justify-center p-4">
+    <div class="card-gradient rounded-3xl p-8 md:p-12 max-w-lg w-full text-center shadow-2xl fade-in">
+     <div class="text-6xl mb-6">
+      🦎🐟🦅🐛
+     </div>
+     <h1 id="main-title" class="text-3xl md:text-4xl font-extrabold text-indigo-900 mb-4">Dyrefysiologi Quiz</h1>
+     <p class="text-gray-600 mb-8 text-lg">Test din kunnskap om hvordan ulike dyr puster, sirkulerer blod, skiller ut avfall og fordøyer mat!</p>
+     <div class="grid grid-cols-2 gap-3 mb-8 text-sm">
+      <div class="bg-indigo-50 rounded-xl p-3">
+       <div class="text-2xl mb-1">
+        💨
+       </div>
+       <div class="font-semibold text-indigo-800">
+        Gassutveksling
+       </div>
+      </div>
+      <div class="bg-purple-50 rounded-xl p-3">
+       <div class="text-2xl mb-1">
+        ❤️
+       </div>
+       <div class="font-semibold text-purple-800">
+        Sirkulasjon
+       </div>
+      </div>
+      <div class="bg-emerald-50 rounded-xl p-3">
+       <div class="text-2xl mb-1">
+        🔄
+       </div>
+       <div class="font-semibold text-emerald-800">
+        Ekskresjon
+       </div>
+      </div>
+      <div class="bg-amber-50 rounded-xl p-3">
+       <div class="text-2xl mb-1">
+        🍽️
+       </div>
+       <div class="font-semibold text-amber-800">
+        Fordøyelse
+       </div>
+      </div>
+     </div><button id="start-btn" onclick="startQuiz()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 px-8 rounded-2xl text-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 pulse-glow"> Start Quiz 🚀 </button>
+     <p class="text-gray-500 mt-4 text-sm">20 spørsmål • Velg riktig svar</p>
+    </div>
+   </div><!-- Quiz Screen -->
+   <div id="quiz-screen" class="min-h-full flex items-center justify-center p-4 hidden">
+    <div class="card-gradient rounded-3xl p-6 md:p-8 max-w-2xl w-full shadow-2xl"><!-- Progress Bar -->
+     <div class="mb-6">
+      <div class="flex justify-between items-center mb-2"><span id="question-counter" class="text-indigo-800 font-bold">Spørsmål 1/20</span> <span id="score-display" class="text-emerald-600 font-bold">Poeng: 0</span>
+      </div>
+      <div class="h-3 bg-indigo-100 rounded-full overflow-hidden">
+       <div id="progress-bar" class="h-full bg-gradient-to-r from-indigo-500 to-purple-500 progress-fill rounded-full" style="width: 5%"></div>
+      </div>
+     </div><!-- Category Badge -->
+     <div id="category-badge" class="inline-block px-4 py-1.5 rounded-full text-white font-semibold mb-4 category-badge bg-indigo-600">
+      💨 GASSUTVEKSLING
+     </div><!-- Animal Icon -->
+     <div id="animal-icon" class="animal-icon text-center mb-4">
+      🐸
+     </div><!-- Question -->
+     <h2 id="question-text" class="text-xl md:text-2xl font-bold text-gray-800 mb-6 text-center leading-relaxed">Spørsmål lastes...</h2><!-- Options -->
+     <div id="options-container" class="space-y-3 mb-6"><!-- Options will be inserted here -->
+     </div><!-- Feedback -->
+     <div id="feedback" class="hidden text-center p-4 rounded-2xl mb-4">
+      <p id="feedback-text" class="font-semibold text-lg"></p>
+      <p id="feedback-explanation" class="text-sm mt-2 opacity-90"></p>
+     </div><!-- Next Button --> <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-3 px-6 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"> Neste spørsmål → </button>
+    </div>
+   </div><!-- Results Screen -->
+   <div id="results-screen" class="min-h-full flex items-center justify-center p-4 hidden">
+    <div class="card-gradient rounded-3xl p-8 md:p-12 max-w-lg w-full text-center shadow-2xl fade-in">
+     <div id="result-emoji" class="text-7xl mb-6">
+      🏆
+     </div>
+     <h2 class="text-3xl font-extrabold text-indigo-900 mb-2">Quiz Fullført!</h2>
+     <p id="result-message" class="text-gray-600 mb-6 text-lg">Flott innsats!</p>
+     <div class="bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl p-6 mb-6">
+      <div class="text-5xl font-extrabold mb-2" id="final-score">
+       0/20
+      </div>
+      <div class="text-indigo-100">
+       Riktige svar
+      </div>
+     </div>
+     <div id="category-results" class="grid grid-cols-2 gap-3 mb-8 text-sm"><!-- Category scores will be inserted here -->
+     </div><button onclick="restartQuiz()" class="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 px-8 rounded-2xl text-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"> Prøv igjen 🔄 </button>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      quiz_title: "Dyrefysiologi Quiz",
+      start_button_text: "Start Quiz 🚀",
+      primary_color: "#4338ca",
+      secondary_color: "#1e1b4b",
+      accent_color: "#8b5cf6",
+      text_color: "#1e1b4b",
+      card_color: "#ffffff"
+    };
+
+    let config = { ...defaultConfig };
+
+    const questions = [
+      // GASSUTVEKSLING
+      {
+        category: "gassutveksling",
+        categoryDisplay: "💨 GASSUTVEKSLING",
+        categoryColor: "#4f46e5",
+        animal: "🐸",
+        question: "Frosken kan puste på to måter. Hvilke organer bruker den til gassutveksling?",
+        options: ["Bare lunger", "Bare gjeller", "Lunger og hud", "Bare hud"],
+        correct: 2,
+        explanation: "Frosker bruker både lunger til å puste luft og huden for gassutveksling, spesielt når de er i vann."
+      },
+      {
+        category: "gassutveksling",
+        categoryDisplay: "💨 GASSUTVEKSLING",
+        categoryColor: "#4f46e5",
+        animal: "🐟",
+        question: "Hvordan foregår gassutveksling hos en fisk?",
+        options: ["Gjennom huden", "Via lunger", "Via gjeller", "Gjennom munnen direkte"],
+        correct: 2,
+        explanation: "Fisker bruker gjeller som har stor overflate og tynt vev for effektiv gassutveksling i vann."
+      },
+      {
+        category: "gassutveksling",
+        categoryDisplay: "💨 GASSUTVEKSLING",
+        categoryColor: "#4f46e5",
+        animal: "🪱",
+        question: "Hvordan får meitemarken oksygen?",
+        options: ["Gjennom lunger", "Via gjeller", "Gjennom fuktig hud", "Den trenger ikke oksygen"],
+        correct: 2,
+        explanation: "Meitemark puster gjennom huden. Huden må være fuktig for at gassutveksling skal fungere."
+      },
+      {
+        category: "gassutveksling",
+        categoryDisplay: "💨 GASSUTVEKSLING",
+        categoryColor: "#4f46e5",
+        animal: "🦅",
+        question: "Fugler har et spesielt effektivt pustsystem. Hva er unikt med det?",
+        options: ["De har tre lunger", "De har luftsekker i tillegg til lunger", "De puster bare gjennom nebbet", "De har gjeller som reserver"],
+        correct: 1,
+        explanation: "Fugler har luftsekker som gjør at luft strømmer enveis gjennom lungene, noe som gir svært effektiv gassutveksling."
+      },
+      {
+        category: "gassutveksling",
+        categoryDisplay: "💨 GASSUTVEKSLING",
+        categoryColor: "#4f46e5",
+        animal: "🦗",
+        question: "Insekter har et unikt system for gassutveksling. Hva heter det?",
+        options: ["Lungepuser", "Gjelle-system", "Trakésystem", "Hud-respirasjon"],
+        correct: 2,
+        explanation: "Insekter bruker trakésystemet - et nettverk av rør som transporterer luft direkte til cellene."
+      },
+      // SIRKULASJON
+      {
+        category: "sirkulasjon",
+        categoryDisplay: "❤️ SIRKULASJON",
+        categoryColor: "#9333ea",
+        animal: "🦐",
+        question: "Hvilken type sirkulasjonssystem har reker og insekter?",
+        options: ["Lukket sirkulasjon", "Åpent sirkulasjon", "Dobbelt sirkulasjon", "Ingen sirkulasjon"],
+        correct: 1,
+        explanation: "Leddyr som reker og insekter har åpent sirkulasjonssystem hvor blodet (hemolymfe) strømmer fritt i kroppshulrommet."
+      },
+      {
+        category: "sirkulasjon",
+        categoryDisplay: "❤️ SIRKULASJON",
+        categoryColor: "#9333ea",
+        animal: "🐟",
+        question: "Fisker har enkelt sirkulasjonssystem. Hva betyr det?",
+        options: ["Blodet går bare én gang gjennom hjertet per omløp", "De har bare én blodåre", "Hjertet slår bare én gang i minuttet", "Blodet strømmer bare én vei"],
+        correct: 0,
+        explanation: "I enkelt sirkulasjon passerer blodet hjertet kun én gang per kretsløp: hjerte → gjeller → kropp → hjerte."
+      },
+      {
+        category: "sirkulasjon",
+        categoryDisplay: "❤️ SIRKULASJON",
+        categoryColor: "#9333ea",
+        animal: "🐕",
+        question: "Pattedyr har dobbelt sirkulasjon. Hvor mange kamre har hjertet deres?",
+        options: ["To kamre", "Tre kamre", "Fire kamre", "Fem kamre"],
+        correct: 2,
+        explanation: "Pattedyr har fire-kammers hjerte med fullstendig separasjon av oksygenrikt og oksygenfattig blod."
+      },
+      {
+        category: "sirkulasjon",
+        categoryDisplay: "❤️ SIRKULASJON",
+        categoryColor: "#9333ea",
+        animal: "🦑",
+        question: "Blekkspruten har et spesielt sirkulasjonssystem. Hva er unikt?",
+        options: ["Den har åpent system", "Den har tre hjerter", "Den har blått blod og åpent system", "Den har blått blod og lukket system"],
+        correct: 3,
+        explanation: "Blekksprut har lukket sirkulasjon og tre hjerter. Blodet er blått fordi det inneholder kobberbasert hemocyanin."
+      },
+      {
+        category: "sirkulasjon",
+        categoryDisplay: "❤️ SIRKULASJON",
+        categoryColor: "#9333ea",
+        animal: "🐊",
+        question: "Krokodiller er reptiler, men har et spesielt hjerte. Hvorfor?",
+        options: ["De har to hjerter", "De har fire-kammers hjerte som pattedyr", "De har åpent sirkulasjonssystem", "De har fem kamre"],
+        correct: 1,
+        explanation: "Krokodiller er de eneste reptilene med komplett fire-kammers hjerte, lik pattedyr og fugler."
+      },
+      // EKSKRESJON
+      {
+        category: "ekskresjon",
+        categoryDisplay: "🔄 EKSKRESJON",
+        categoryColor: "#059669",
+        animal: "🪱",
+        question: "Hvilke organer bruker meitemarken til å skille ut avfallsstoffer?",
+        options: ["Nyrer", "Nefridier", "Malpighiske rør", "Gjeller"],
+        correct: 1,
+        explanation: "Leddormer som meitemark har nefridier - rørformede organer som filtrerer avfallsstoffer fra kroppsvæsken."
+      },
+      {
+        category: "ekskresjon",
+        categoryDisplay: "🔄 EKSKRESJON",
+        categoryColor: "#059669",
+        animal: "🦗",
+        question: "Insekter har et unikt ekskresjonsystem. Hva heter organene?",
+        options: ["Nyrer", "Nefridier", "Malpighiske rør", "Ekskresjonsgjeller"],
+        correct: 2,
+        explanation: "Insekter bruker malpighiske rør som samler avfallsstoffer fra hemolymfen og sender det til tarmen."
+      },
+      {
+        category: "ekskresjon",
+        categoryDisplay: "🔄 EKSKRESJON",
+        categoryColor: "#059669",
+        animal: "🐟",
+        question: "Benfisker skiller ut ammoniakk. Gjennom hvilke organer?",
+        options: ["Bare nyrer", "Bare gjeller", "Hovedsakelig gjeller, noe via nyrer", "Bare huden"],
+        correct: 2,
+        explanation: "Benfisker skiller ut mesteparten av ammoniakken direkte gjennom gjellene, mens nyrene regulerer salt og vann."
+      },
+      {
+        category: "ekskresjon",
+        categoryDisplay: "🔄 EKSKRESJON",
+        categoryColor: "#059669",
+        animal: "🐦",
+        question: "Fugler og reptiler skiller ut urinsyre. Hvorfor er dette en fordel?",
+        options: ["Det gir energi", "Det krever lite vann", "Det er giftig for rovdyr", "Det hjelper med flyving"],
+        correct: 1,
+        explanation: "Urinsyre kan skilles ut som en tykk pasta, noe som sparer vann - viktig for dyr som legger egg på land."
+      },
+      {
+        category: "ekskresjon",
+        categoryDisplay: "🔄 EKSKRESJON",
+        categoryColor: "#059669",
+        animal: "🐕",
+        question: "Hva er den funksjonelle enheten i pattedyrs nyrer?",
+        options: ["Nefridier", "Malpighiske rør", "Nefron", "Glomerulus"],
+        correct: 2,
+        explanation: "Nefronet er den funksjonelle enheten i nyren som filtrerer blod og produserer urin."
+      },
+      // FORDØYELSE
+      {
+        category: "fordoyelse",
+        categoryDisplay: "🍽️ FORDØYELSE",
+        categoryColor: "#d97706",
+        animal: "🦠",
+        question: "Amøber tar opp næring ved en spesiell prosess. Hva heter den?",
+        options: ["Absorpsjon", "Endocytose", "Ekskresjon", "Fotosyntese"],
+        correct: 1,
+        explanation: "Amøber bruker endocytose (fagocytose) - de omslutter maten med cellemembranen og danner en matvakuole."
+      },
+      {
+        category: "fordoyelse",
+        categoryDisplay: "🍽️ FORDØYELSE",
+        categoryColor: "#d97706",
+        animal: "🐔",
+        question: "Fugler har kro og muskelmage. Hva er funksjonen til muskelmagen?",
+        options: ["Å lagre mat", "Å male opp maten mekanisk", "Å produsere enzymer", "Å absorbere næring"],
+        correct: 1,
+        explanation: "Muskelmagen (krås) maler opp maten mekanisk, ofte ved hjelp av svelget grus, siden fugler mangler tenner."
+      },
+      {
+        category: "fordoyelse",
+        categoryDisplay: "🍽️ FORDØYELSE",
+        categoryColor: "#d97706",
+        animal: "🐕",
+        question: "Hva er funksjonen til mikrovilli i tynntarmen?",
+        options: ["Å bryte ned mat", "Å øke overflaten for absorpsjon", "Å transportere mat videre", "Å produsere enzymer"],
+        correct: 1,
+        explanation: "Mikrovilli er små utposninger som øker tarmens overflate dramatisk for mer effektiv næringsopptak."
+      },
+      {
+        category: "fordoyelse",
+        categoryDisplay: "🍽️ FORDØYELSE",
+        categoryColor: "#d97706",
+        animal: "🐄",
+        question: "Drøvtyggere som kuer har flere mager. Hvor mange rom har magesystemet?",
+        options: ["To rom", "Tre rom", "Fire rom", "Fem rom"],
+        correct: 2,
+        explanation: "Kuer har fire magerom: vom, nettmage, bladmage og løype. Dette hjelper dem å fordøye cellulose."
+      },
+      {
+        category: "fordoyelse",
+        categoryDisplay: "🍽️ FORDØYELSE",
+        categoryColor: "#d97706",
+        animal: "🧑",
+        question: "I hvilken rekkefølge passerer maten gjennom menneskets fordøyelsessystem?",
+        options: ["Munn → magesekk → spiserør → tynntarm → tykktarm", "Munn → spiserør → magesekk → tynntarm → tykktarm", "Munn → spiserør → tynntarm → magesekk → tykktarm", "Munn → tynntarm → magesekk → spiserør → tykktarm"],
+        correct: 1,
+        explanation: "Maten går: munn → spiserør → magesekk → tynntarm (næringsopptak) → tykktarm (vannopptak) → endetarm."
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    let categoryScores = {
+      gassutveksling: { correct: 0, total: 0 },
+      sirkulasjon: { correct: 0, total: 0 },
+      ekskresjon: { correct: 0, total: 0 },
+      fordoyelse: { correct: 0, total: 0 }
+    };
+
+    // Shuffle array function
+    function shuffleArray(array) {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
+    let shuffledQuestions = [];
+
+    function startQuiz() {
+      shuffledQuestions = shuffleArray(questions);
+      currentQuestion = 0;
+      score = 0;
+      categoryScores = {
+        gassutveksling: { correct: 0, total: 0 },
+        sirkulasjon: { correct: 0, total: 0 },
+        ekskresjon: { correct: 0, total: 0 },
+        fordoyelse: { correct: 0, total: 0 }
+      };
+      
+      document.getElementById('start-screen').classList.add('hidden');
+      document.getElementById('quiz-screen').classList.remove('hidden');
+      document.getElementById('results-screen').classList.add('hidden');
+      
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      answered = false;
+      const q = shuffledQuestions[currentQuestion];
+      
+      document.getElementById('question-counter').textContent = `Spørsmål ${currentQuestion + 1}/${shuffledQuestions.length}`;
+      document.getElementById('score-display').textContent = `Poeng: ${score}`;
+      document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / shuffledQuestions.length) * 100}%`;
+      
+      document.getElementById('category-badge').textContent = q.categoryDisplay;
+      document.getElementById('category-badge').style.backgroundColor = q.categoryColor;
+      document.getElementById('animal-icon').textContent = q.animal;
+      document.getElementById('question-text').textContent = q.question;
+      
+      const optionsContainer = document.getElementById('options-container');
+      optionsContainer.innerHTML = '';
+      
+      q.options.forEach((option, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn w-full p-4 text-left rounded-xl border-2 border-gray-200 bg-white hover:border-indigo-400 hover:bg-indigo-50 font-semibold text-gray-700 transition-all duration-200';
+        btn.innerHTML = `<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 font-bold mr-3 text-sm">${String.fromCharCode(65 + index)}</span>${option}`;
+        btn.onclick = () => selectAnswer(index);
+        optionsContainer.appendChild(btn);
+      });
+      
+      document.getElementById('feedback').classList.add('hidden');
+      document.getElementById('next-btn').classList.add('hidden');
+    }
+
+    function selectAnswer(index) {
+      if (answered) return;
+      answered = true;
+      
+      const q = shuffledQuestions[currentQuestion];
+      const buttons = document.querySelectorAll('.option-btn');
+      
+      categoryScores[q.category].total++;
+      
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === q.correct) {
+          btn.classList.add('correct-answer');
+        } else if (i === index && index !== q.correct) {
+          btn.classList.add('wrong-answer');
+        }
+      });
+      
+      const feedback = document.getElementById('feedback');
+      const feedbackText = document.getElementById('feedback-text');
+      const feedbackExplanation = document.getElementById('feedback-explanation');
+      
+      if (index === q.correct) {
+        score++;
+        categoryScores[q.category].correct++;
+        feedback.className = 'text-center p-4 rounded-2xl mb-4 bg-emerald-100 text-emerald-800';
+        feedbackText.textContent = '✓ Riktig!';
+      } else {
+        feedback.className = 'text-center p-4 rounded-2xl mb-4 bg-red-100 text-red-800';
+        feedbackText.textContent = '✗ Feil svar';
+      }
+      
+      feedbackExplanation.textContent = q.explanation;
+      feedback.classList.remove('hidden');
+      
+      document.getElementById('score-display').textContent = `Poeng: ${score}`;
+      
+      const nextBtn = document.getElementById('next-btn');
+      nextBtn.classList.remove('hidden');
+      nextBtn.textContent = currentQuestion === shuffledQuestions.length - 1 ? 'Se resultater 🎉' : 'Neste spørsmål →';
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      
+      if (currentQuestion >= shuffledQuestions.length) {
+        showResults();
+      } else {
+        loadQuestion();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-screen').classList.add('hidden');
+      document.getElementById('results-screen').classList.remove('hidden');
+      
+      const percentage = Math.round((score / shuffledQuestions.length) * 100);
+      document.getElementById('final-score').textContent = `${score}/${shuffledQuestions.length}`;
+      
+      let emoji, message;
+      if (percentage >= 90) {
+        emoji = '🏆';
+        message = 'Fantastisk! Du er en ekte biologi-ekspert!';
+      } else if (percentage >= 70) {
+        emoji = '🌟';
+        message = 'Veldig bra! Du kan mye om dyrefysiologi!';
+      } else if (percentage >= 50) {
+        emoji = '👍';
+        message = 'Bra innsats! Øv litt mer så blir du enda bedre!';
+      } else {
+        emoji = '📚';
+        message = 'Ikke gi opp! Les litt mer og prøv igjen!';
+      }
+      
+      document.getElementById('result-emoji').textContent = emoji;
+      document.getElementById('result-message').textContent = message;
+      
+      const categoryResults = document.getElementById('category-results');
+      categoryResults.innerHTML = `
+        <div class="bg-indigo-50 rounded-xl p-3">
+          <div class="text-xl mb-1">💨</div>
+          <div class="font-semibold text-indigo-800">Gassutveksling</div>
+          <div class="text-indigo-600">${categoryScores.gassutveksling.correct}/${categoryScores.gassutveksling.total}</div>
+        </div>
+        <div class="bg-purple-50 rounded-xl p-3">
+          <div class="text-xl mb-1">❤️</div>
+          <div class="font-semibold text-purple-800">Sirkulasjon</div>
+          <div class="text-purple-600">${categoryScores.sirkulasjon.correct}/${categoryScores.sirkulasjon.total}</div>
+        </div>
+        <div class="bg-emerald-50 rounded-xl p-3">
+          <div class="text-xl mb-1">🔄</div>
+          <div class="font-semibold text-emerald-800">Ekskresjon</div>
+          <div class="text-emerald-600">${categoryScores.ekskresjon.correct}/${categoryScores.ekskresjon.total}</div>
+        </div>
+        <div class="bg-amber-50 rounded-xl p-3">
+          <div class="text-xl mb-1">🍽️</div>
+          <div class="font-semibold text-amber-800">Fordøyelse</div>
+          <div class="text-amber-600">${categoryScores.fordoyelse.correct}/${categoryScores.fordoyelse.total}</div>
+        </div>
+      `;
+    }
+
+    function restartQuiz() {
+      document.getElementById('results-screen').classList.add('hidden');
+      document.getElementById('start-screen').classList.remove('hidden');
+    }
+
+    function applyConfig() {
+      document.getElementById('main-title').textContent = config.quiz_title || defaultConfig.quiz_title;
+      document.getElementById('start-btn').textContent = config.start_button_text || defaultConfig.start_button_text;
+    }
+
+    // Element SDK Integration
+    window.elementSdk.init({
+      defaultConfig,
+      onConfigChange: async (newConfig) => {
+        config = { ...defaultConfig, ...newConfig };
+        applyConfig();
+      },
+      mapToCapabilities: (cfg) => ({
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      }),
+      mapToEditPanelValues: (cfg) => new Map([
+        ["quiz_title", cfg.quiz_title || defaultConfig.quiz_title],
+        ["start_button_text", cfg.start_button_text || defaultConfig.start_button_text]
+      ])
+    });
+
+    applyConfig();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c2695d1854e2678',t:'MTc2OTE2MzkwNy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
