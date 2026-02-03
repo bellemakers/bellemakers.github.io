@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kapittel 12: Arbeid og Velferd Quiz</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .quiz-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .quiz-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+
+    .quiz-subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .question-number {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .question-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .option {
+      padding: 15px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .option:hover {
+      border-color: #667eea;
+      background: #f5f7ff;
+    }
+
+    .option.selected {
+      border-color: #667eea;
+      background: #f5f7ff;
+    }
+
+    .option.correct {
+      border-color: #10b981;
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .option.incorrect {
+      border-color: #ef4444;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .option.disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .feedback {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      background: #ecfdf5;
+      color: #047857;
+      border-left: 4px solid #10b981;
+    }
+
+    .feedback.incorrect {
+      background: #fef2f2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .results-container {
+      text-align: center;
+      display: none;
+    }
+
+    .results-container.show {
+      display: block;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 48px;
+      font-weight: 700;
+    }
+
+    .results-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .results-text {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+
+    .results-details {
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      color: #666;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-wrapper">
+    <div class="quiz-container">
+      <!-- Quiz Screen -->
+      <div id="quiz-screen">
+        <h1 class="quiz-title" id="title">Kapittel 12: Arbeid og Velferd</h1>
+        <p class="quiz-subtitle" id="subtitle">Test dine kunnskaper</p>
+        
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress"></div>
+        </div>
+
+        <div id="question-number" class="question-number"></div>
+        <h2 class="question-text" id="question"></h2>
+        
+        <div id="feedback" class="feedback"></div>
+        
+        <div class="options" id="options"></div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" id="next-btn" disabled>Neste spørsmål</button>
+        </div>
+      </div>
+
+      <!-- Results Screen -->
+      <div id="results-screen" class="results-container">
+        <div class="score-circle" id="score-display"></div>
+        <h2 class="results-title" id="results-title">Quiz ferdig!</h2>
+        <p class="results-text" id="results-message"></p>
+        
+        <div class="results-details">
+          <div class="detail-row">
+            <span class="detail-label">Riktige svar:</span>
+            <span class="detail-value" id="correct-count"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Feil svar:</span>
+            <span class="detail-value" id="incorrect-count"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Prosent:</span>
+            <span class="detail-value" id="percentage"></span>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button class="btn btn-primary" id="retake-btn">Gjør quizen på nytt</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Hva beskriver begrepet 'fremmedgjøring' (alienation) i arbeidssammenheng?",
+        options: [
+          "Når arbeidstakere flytter til et fremmed land",
+          "Når arbeidstakere mister kontroll over sitt arbeid og dets resultat",
+          "Når arbeidsgiver og arbeidstaker har ulike nasjonaliteter",
+          "Når det er mangel på sosialt samspill på arbeidsplassen"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva menes med 'autonomi' i arbeidslivet?",
+        options: [
+          "Automatisering av arbeidsprosesser",
+          "Muligheten til å ta selvstendige beslutninger og ha kontroll over sitt arbeid",
+          "Arbeid utført helt alene uten kollegaer",
+          "Når arbeidstakere eier bedriften selv"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er karakteristisk for den 'uformelle økonomien'?",
+        options: [
+          "Arbeid som er registrert og beskattet av staten",
+          "Arbeid som ikke er offisielt registrert eller beskattet",
+          "Kun arbeid utført av frivillige organisasjoner",
+          "Offentlig sektor og statsansatte"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er en 'selvstendig næringsdrivende'?",
+        options: [
+          "En arbeidstaker som jobber selv",
+          "En person som driver eget foretak og ikke er ansatt av andre",
+          "En arbeidsledig som søker etter jobb",
+          "En frivillig som arbeider uten betaling"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er 'frivillig arbeid'?",
+        options: [
+          "Arbeid som bare gjøres når man har tid",
+          "Ubetalt arbeid som gjøres frivillig for organisasjoner eller samfunnet",
+          "Arbeid man gjør på eget initiativ hjemme",
+          "Arbeid som man kan slutte i når som helst"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva betyr 'arbeid' i sosiologisk sammenheng?",
+        options: [
+          "Kun arbeid som gir lønn",
+          "Menneskelig aktivitet som produserer varer eller tjenester, både betalt og ubetalt",
+          "Bare arbeid utført i en bedrift",
+          "Kun arbeid som er registrert hos staten"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er en 'profesjon'?",
+        options: [
+          "Enhver form for arbeid",
+          "Et fagfelt som krever spesialisert utdanning, høy status og etiske normer",
+          "Arbeid som betales høyt",
+          "Arbeid som gjøres på heltid"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er 'arbeidsledighet'?",
+        options: [
+          "Når noen er lat eller ikke vil arbeide",
+          "Når personer som ønsker arbeid ikke finner jobb",
+          "Når bedriften mangler ledelse",
+          "Når arbeidstakere tar fri fra jobb"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva betyr 'likestilling' på arbeidsmarkedet?",
+        options: [
+          "At alle får samme lønn uavhengig av prestasjon",
+          "Lik behandling, muligheter og vilkår for alle uavhengig av kjønn, etnisitet og andre forhold",
+          "At menn og kvinner må ha samme type jobb",
+          "At alle ansatte må ha samme arbeidsoppgaver"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er formålet med 'IA-avtalen' (Inkluderende Arbeidsliv)?",
+        options: [
+          "Å redusere lønningene til ansatte",
+          "Å øke arbeidsledigheten",
+          "Å fremme et arbeidsliv der alle kan være inkludert, også personer med funksjonsnedsettelser",
+          "Å privatisere alle offentlige bedrifter"
+        ],
+        correct: 2
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    let config = {
+      quiz_title: "Kapittel 12: Arbeid og Velferd",
+      retake_button_text: "Gjør quizen på nytt"
+    };
+
+    const defaultConfig = {
+      quiz_title: "Kapittel 12: Arbeid og Velferd",
+      retake_button_text: "Gjør quizen på nytt"
+    };
+
+    async function initializeSDK() {
+      if (!window.elementSdk) return;
+
+      await window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: updateUI,
+        mapToCapabilities: () => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ["quiz_title", cfg.quiz_title || defaultConfig.quiz_title],
+          ["retake_button_text", cfg.retake_button_text || defaultConfig.retake_button_text]
+        ])
+      });
+      config = window.elementSdk.config;
+      updateUI(config);
+    }
+
+    function updateUI(cfg) {
+      document.getElementById('title').textContent = cfg.quiz_title || defaultConfig.quiz_title;
+      document.getElementById('retake-btn').textContent = cfg.retake_button_text || defaultConfig.retake_button_text;
+    }
+
+    function displayQuestion() {
+      const question = questions[currentQuestion];
+      document.getElementById('question-number').textContent = `Spørsmål ${currentQuestion + 1} av ${questions.length}`;
+      document.getElementById('question').textContent = question.question;
+      
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+      document.getElementById('progress').style.width = progress + '%';
+
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+
+      question.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = 'option';
+        button.textContent = option;
+        button.onclick = () => selectOption(index);
+        optionsContainer.appendChild(button);
+      });
+
+      document.getElementById('feedback').className = 'feedback';
+      document.getElementById('next-btn').disabled = true;
+      answered = false;
+    }
+
+ 
