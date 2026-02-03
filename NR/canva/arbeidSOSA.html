@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="no">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arbeid og Velferd Quiz</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+
+    .app-wrapper {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .quiz-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      padding: 40px;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .quiz-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: #333;
+      margin: 0 0 10px 0;
+      text-align: center;
+    }
+
+    .quiz-subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 14px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e5e7eb;
+      border-radius: 2px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .question-number {
+      font-size: 12px;
+      color: #999;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .question-text {
+      font-size: 18px;
+      font-weight: 600;
+      color: #222;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    .option {
+      padding: 15px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: white;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .option:hover {
+      border-color: #667eea;
+      background: #f5f7ff;
+    }
+
+    .option.selected {
+      border-color: #667eea;
+      background: #f5f7ff;
+    }
+
+    .option.correct {
+      border-color: #10b981;
+      background: #ecfdf5;
+      color: #047857;
+    }
+
+    .option.incorrect {
+      border-color: #ef4444;
+      background: #fef2f2;
+      color: #991b1b;
+    }
+
+    .option.disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    .feedback {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .feedback.show {
+      display: block;
+    }
+
+    .feedback.correct {
+      background: #ecfdf5;
+      color: #047857;
+      border-left: 4px solid #10b981;
+    }
+
+    .feedback.incorrect {
+      background: #fef2f2;
+      color: #991b1b;
+      border-left: 4px solid #ef4444;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+
+    .results-container {
+      text-align: center;
+      display: none;
+    }
+
+    .results-container.show {
+      display: block;
+      animation: slideUp 0.6s ease-out;
+    }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 48px;
+      font-weight: 700;
+    }
+
+    .results-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 10px;
+    }
+
+    .results-text {
+      color: #666;
+      margin-bottom: 30px;
+      font-size: 15px;
+    }
+
+    .results-details {
+      background: #f9fafb;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .detail-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .detail-label {
+      color: #666;
+    }
+
+    .detail-value {
+      font-weight: 600;
+      color: #333;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="app-wrapper">
+   <div class="quiz-container"><!-- Quiz Screen -->
+    <div id="quiz-screen">
+     <h1 class="quiz-title" id="title">Arbeid og Velferd Quiz</h1>
+     <p class="quiz-subtitle" id="subtitle">Test dine kunnskaper</p>
+     <div class="progress-bar">
+      <div class="progress-fill" id="progress"></div>
+     </div>
+     <div id="question-number" class="question-number"></div>
+     <h2 class="question-text" id="question"></h2>
+     <div id="feedback" class="feedback"></div>
+     <div class="options" id="options"></div>
+     <div class="button-group"><button class="btn btn-primary" id="next-btn" disabled>Neste spørsmål</button>
+     </div>
+    </div><!-- Results Screen -->
+    <div id="results-screen" class="results-container">
+     <div class="score-circle" id="score-display"></div>
+     <h2 class="results-title" id="results-title">Quiz ferdig!</h2>
+     <p class="results-text" id="results-message"></p>
+     <div class="results-details">
+      <div class="detail-row"><span class="detail-label">Riktige svar:</span> <span class="detail-value" id="correct-count"></span>
+      </div>
+      <div class="detail-row"><span class="detail-label">Feil svar:</span> <span class="detail-value" id="incorrect-count"></span>
+      </div>
+      <div class="detail-row"><span class="detail-label">Prosent:</span> <span class="detail-value" id="percentage"></span>
+      </div>
+     </div>
+     <div class="button-group"><button class="btn btn-primary" id="retake-btn">Gjør quizen på nytt</button>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+    const questions = [
+      {
+        question: "Hva er NAV?",
+        options: [
+          "Norges AutomobilVerein",
+          "Arbeids- og velferdsetaten",
+          "Nasjonalt Arbeidskontor",
+          "Norsk Arbeidskraft og Verdier"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er hovedgrunnlaget for den norske velferdsmodellen?",
+        options: [
+          "Privat marked og konkurranse",
+          "Offentlig finansiering gjennom skatter og avgifter",
+          "Frivillig arbeid",
+          "Internasjonal bistand"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er arbeidsmarkedsstatistikken som måler antall personer uten arbeid som søker jobb?",
+        options: [
+          "Inaktivitet",
+          "Arbeidsledighet",
+          "Frivillig ledighet",
+          "Frikjøp"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hvilken lov regulerer forhold mellom arbeidsgiver og arbeidstaker i Norge?",
+        options: [
+          "Straffeprosessloven",
+          "Arbeidsmiljøloven",
+          "Skatteloven",
+          "Opplæringsloven"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er tilleggsstønader gjennom NAV for?",
+        options: [
+          "Å belønne hard arbeid",
+          "Å gi ekstra inntekt til arbeidstakere",
+          "Å dekke spesielle kostnader for personer med behov",
+          "Å øke pristilpasningen"
+        ],
+        correct: 2
+      },
+      {
+        question: "Hva betyr 'sosial dumping' i arbeidsmarkedssammenheng?",
+        options: [
+          "Når bedrifter sletter gamle data",
+          "Når arbeidere fra andre land accepterer lavere lønn og dårligere forhold",
+          "Når det er nedgang i sosial aktivitet",
+          "Når staten reduserer velferdsutgifter"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hvilken type arbeid er typisk for gig-økonomien?",
+        options: [
+          "Fast ansettelse hos samme arbeidsgiver",
+          "Kortvarig, fleksible oppgaver utan tradisjonell arbeidsgiver",
+          "Livelong læring og opplæring",
+          "Lederposisjon i store selskaper"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er formålet med arbeidsgiverens innbetalinger til trygdefondet?",
+        options: [
+          "Å øke egne fortjenester",
+          "Å finansiere sosiale trygder for arbeidstakere",
+          "Å redusere arbeidernes lønn",
+          "Å investere i aksjemarkedet"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er likestilling i arbeidslivet hovedsakelig om?",
+        options: [
+          "At alle får samme lønn uavhengig av prestasjon",
+          "Lik mulighet, behandling og vilkår for alle uavhengig av kjønn og bakgrunn",
+          "At menn og kvinner må ha samme jobbtype",
+          "Å fjerne alle lederposisjoner"
+        ],
+        correct: 1
+      },
+      {
+        question: "Hva er arbeidskraftens mobilitet?",
+        options: [
+          "Evnen til å reise raskt til jobb",
+          "Evnen og villigheten til å bytte jobb eller flyttepå",
+          "Hvor mange timer man arbeider",
+          "Hvor mye man tjener"
+        ],
+        correct: 1
+      }
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    let config = {
+      quiz_title: "Arbeid og Velferd Quiz",
+      retake_button_text: "Gjør quizen på nytt"
+    };
+
+    const defaultConfig = {
+      quiz_title: "Arbeid og Velferd Quiz",
+      retake_button_text: "Gjør quizen på nytt"
+    };
+
+    async function initializeSDK() {
+      if (!window.elementSdk) return;
+
+      await window.elementSdk.init({
+        defaultConfig,
+        onConfigChange: updateUI,
+        mapToCapabilities: () => ({
+          recolorables: [],
+          borderables: [],
+          fontEditable: undefined,
+          fontSizeable: undefined
+        }),
+        mapToEditPanelValues: (cfg) => new Map([
+          ["quiz_title", cfg.quiz_title || defaultConfig.quiz_title],
+          ["retake_button_text", cfg.retake_button_text || defaultConfig.retake_button_text]
+        ])
+      });
+      config = window.elementSdk.config;
+      updateUI(config);
+    }
+
+    function updateUI(cfg) {
+      document.getElementById('title').textContent = cfg.quiz_title || defaultConfig.quiz_title;
+      document.getElementById('retake-btn').textContent = cfg.retake_button_text || defaultConfig.retake_button_text;
+    }
+
+    function displayQuestion() {
+      const question = questions[currentQuestion];
+      document.getElementById('question-number').textContent = `Spørsmål ${currentQuestion + 1} av ${questions.length}`;
+      document.getElementById('question').textContent = question.question;
+      
+      const progress = ((currentQuestion + 1) / questions.length) * 100;
+      document.getElementById('progress').style.width = progress + '%';
+
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+
+      question.options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.className = 'option';
+        button.textContent = option;
+        button.onclick = () => selectOption(index);
+        optionsContainer.appendChild(button);
+      });
+
+      document.getElementById('feedback').className = 'feedback';
+      document.getElementById('next-btn').disabled = true;
+      answered = false;
+    }
+
+    function selectOption(index) {
+      if (answered) return;
+
+      const question = questions[currentQuestion];
+      const options = document.querySelectorAll('.option');
+      const feedback = document.getElementById('feedback');
+
+      options.forEach(opt => opt.classList.add('disabled'));
+
+      const isCorrect = index === question.correct;
+
+      if (isCorrect) {
+        options[index].classList.add('correct');
+        feedback.className = 'feedback show correct';
+        feedback.textContent = '✓ Riktig svar!';
+        score++;
+      } else {
+        options[index].classList.add('incorrect');
+        options[question.correct].classList.add('correct');
+        feedback.className = 'feedback show incorrect';
+        feedback.textContent = `✗ Feil svar. Det riktige svaret er: "${question.options[question.correct]}"`;
+      }
+
+      document.getElementById('next-btn').disabled = false;
+      answered = true;
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        displayQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('results-screen').classList.add('show');
+
+      const percentage = Math.round((score / questions.length) * 100);
+      document.getElementById('score-display').textContent = `${percentage}%`;
+      document.getElementById('correct-count').textContent = score;
+      document.getElementById('incorrect-count').textContent = questions.length - score;
+      document.getElementById('percentage').textContent = percentage + '%';
+
+      if (percentage === 100) {
+        document.getElementById('results-title').textContent = 'Perfekt!';
+        document.getElementById('results-message').textContent = 'Du beherske alle spørsmålene! 🎉';
+      } else if (percentage >= 80) {
+        document.getElementById('results-title').textContent = 'Kjempebra!';
+        document.getElementById('results-message').textContent = 'Du gjorde det veldig bra på quizen!';
+      } else if (percentage >= 60) {
+        document.getElementById('results-title').textContent = 'Bra innsats!';
+        document.getElementById('results-message').textContent = 'Du har god kunnskaper, men det er rom for forbedring.';
+      } else {
+        document.getElementById('results-title').textContent = 'Prøv igjen!';
+        document.getElementById('results-message').textContent = 'Gjennomfør quizen på nytt og se hvor du kan forbedre deg.';
+      }
+    }
+
+    function retakeQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      document.getElementById('quiz-screen').style.display = 'block';
+      document.getElementById('results-screen').classList.remove('show');
+      displayQuestion();
+    }
+
+    document.getElementById('next-btn').addEventListener('click', nextQuestion);
+    document.getElementById('retake-btn').addEventListener('click', retakeQuiz);
+
+    initializeSDK().then(() => displayQuestion());
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c818912b6547130',t:'MTc3MDExNzU4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
