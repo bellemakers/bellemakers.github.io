@@ -205,15 +205,6 @@
       cursor: not-allowed;
     }
 
-    .btn-secondary {
-      background: #f3f4f6;
-      color: #333;
-    }
-
-    .btn-secondary:hover {
-      background: #e5e7eb;
-    }
-
     .results-container {
       text-align: center;
       display: none;
@@ -316,16 +307,16 @@
    </div>
   </div>
   <script>
-    const questions = [
+    const baseQuestions = [
       {
         question: "Hva er NAV?",
         options: [
-                   "Nasjonalt Arbeidskontor",
           "Norges AutomobilVerein",
           "Arbeids- og velferdsetaten",
+          "Nasjonalt Arbeidskontor",
           "Norsk Arbeidskraft og Verdier"
         ],
-        correct: 2
+        correctAnswer: "Arbeids- og velferdsetaten"
       },
       {
         question: "Hva er hovedgrunnlaget for den norske velferdsmodellen?",
@@ -335,28 +326,27 @@
           "Frivillig arbeid",
           "Internasjonal bistand"
         ],
-        correct: 1
+        correctAnswer: "Offentlig finansiering gjennom skatter og avgifter"
       },
       {
         question: "Hva er arbeidsmarkedsstatistikken som måler antall personer uten arbeid som søker jobb?",
         options: [
           "Inaktivitet",
+          "Arbeidsledighet",
           "Frivillig ledighet",
-          "Frikjøp",
-         "Arbeidsledighet"
+          "Frikjøp"
         ],
-        correct: 3
+        correctAnswer: "Arbeidsledighet"
       },
       {
         question: "Hvilken lov regulerer forhold mellom arbeidsgiver og arbeidstaker i Norge?",
         options: [
           "Straffeprosessloven",
-                   "Skatteloven",
           "Arbeidsmiljøloven",
-
+          "Skatteloven",
           "Opplæringsloven"
         ],
-        correct: 2
+        correctAnswer: "Arbeidsmiljøloven"
       },
       {
         question: "Hva er tilleggsstønader gjennom NAV for?",
@@ -366,47 +356,47 @@
           "Å dekke spesielle kostnader for personer med behov",
           "Å øke pristilpasningen"
         ],
-        correct: 2
+        correctAnswer: "Å dekke spesielle kostnader for personer med behov"
       },
       {
         question: "Hva betyr 'sosial dumping' i arbeidsmarkedssammenheng?",
         options: [
-         "Når arbeidere fra andre land accepterer lavere lønn og dårligere forhold",
           "Når bedrifter sletter gamle data",
+          "Når arbeidere fra andre land accepterer lavere lønn og dårligere forhold",
           "Når det er nedgang i sosial aktivitet",
           "Når staten reduserer velferdsutgifter"
         ],
-        correct: 0
+        correctAnswer: "Når arbeidere fra andre land accepterer lavere lønn og dårligere forhold"
       },
       {
         question: "Hvilken type arbeid er typisk for gig-økonomien?",
         options: [
           "Fast ansettelse hos samme arbeidsgiver",
+          "Kortvarig, fleksible oppgaver utan tradisjonell arbeidsgiver",
           "Livelong læring og opplæring",
-         "Kortvarig, fleksible oppgaver utan tradisjonell arbeidsgiver",
           "Lederposisjon i store selskaper"
         ],
-        correct: 2
+        correctAnswer: "Kortvarig, fleksible oppgaver utan tradisjonell arbeidsgiver"
       },
       {
         question: "Hva er formålet med arbeidsgiverens innbetalinger til trygdefondet?",
         options: [
-         "Å finansiere sosiale trygder for arbeidstakere",
           "Å øke egne fortjenester",
+          "Å finansiere sosiale trygder for arbeidstakere",
           "Å redusere arbeidernes lønn",
           "Å investere i aksjemarkedet"
         ],
-        correct: 0
+        correctAnswer: "Å finansiere sosiale trygder for arbeidstakere"
       },
       {
         question: "Hva er likestilling i arbeidslivet hovedsakelig om?",
         options: [
           "At alle får samme lønn uavhengig av prestasjon",
+          "Lik mulighet, behandling og vilkår for alle uavhengig av kjønn og bakgrunn",
           "At menn og kvinner må ha samme jobbtype",
           "Å fjerne alle lederposisjoner"
-         "Lik mulighet, behandling og vilkår for alle uavhengig av kjønn og bakgrunn"
         ],
-        correct: 3
+        correctAnswer: "Lik mulighet, behandling og vilkår for alle uavhengig av kjønn og bakgrunn"
       },
       {
         question: "Hva er arbeidskraftens mobilitet?",
@@ -416,10 +406,31 @@
           "Hvor mange timer man arbeider",
           "Hvor mye man tjener"
         ],
-        correct: 1
+        correctAnswer: "Evnen og villigheten til å bytte jobb eller flyttepå"
       }
     ];
 
+    function shuffle(array) {
+      const arr = [...array];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function prepareQuestions() {
+      return baseQuestions.map(q => {
+        const shuffledOptions = shuffle(q.options);
+        return {
+          question: q.question,
+          options: shuffledOptions,
+          correctIndex: shuffledOptions.indexOf(q.correctAnswer)
+        };
+      });
+    }
+
+    let questions = prepareQuestions();
     let currentQuestion = 0;
     let score = 0;
     let answered = false;
@@ -492,7 +503,7 @@
 
       options.forEach(opt => opt.classList.add('disabled'));
 
-      const isCorrect = index === question.correct;
+      const isCorrect = index === question.correctIndex;
 
       if (isCorrect) {
         options[index].classList.add('correct');
@@ -501,9 +512,9 @@
         score++;
       } else {
         options[index].classList.add('incorrect');
-        options[question.correct].classList.add('correct');
+        options[question.correctIndex].classList.add('correct');
         feedback.className = 'feedback show incorrect';
-        feedback.textContent = `✗ Feil svar. Det riktige svaret er: "${question.options[question.correct]}"`;
+        feedback.textContent = `✗ Feil svar. Det riktige svaret er: "${question.options[question.correctIndex]}"`;
       }
 
       document.getElementById('next-btn').disabled = false;
@@ -531,7 +542,7 @@
 
       if (percentage === 100) {
         document.getElementById('results-title').textContent = 'Perfekt!';
-        document.getElementById('results-message').textContent = 'Du beherske alle spørsmålene! 🎉';
+        document.getElementById('results-message').textContent = 'Du beherska alle spørsmålene! 🎉';
       } else if (percentage >= 80) {
         document.getElementById('results-title').textContent = 'Kjempebra!';
         document.getElementById('results-message').textContent = 'Du gjorde det veldig bra på quizen!';
@@ -548,6 +559,7 @@
       currentQuestion = 0;
       score = 0;
       answered = false;
+      questions = prepareQuestions();
       document.getElementById('quiz-screen').style.display = 'block';
       document.getElementById('results-screen').classList.remove('show');
       displayQuestion();
@@ -558,5 +570,5 @@
 
     initializeSDK().then(() => displayQuestion());
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c818912b6547130',t:'MTc3MDExNzU4OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c82315d10a17130',t:'MTc3MDEyNDQ4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
