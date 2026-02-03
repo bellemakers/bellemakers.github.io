@@ -1,6 +1,6 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="no">
-<head>
+ <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kapittel 12: Arbeid og Velferd Quiz</title>
@@ -278,59 +278,43 @@
       color: #333;
     }
   </style>
-</head>
-<body>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
   <div class="app-wrapper">
-    <div class="quiz-container">
-      <!-- Quiz Screen -->
-      <div id="quiz-screen">
-        <h1 class="quiz-title" id="title">Kapittel 12: Arbeid og Velferd</h1>
-        <p class="quiz-subtitle" id="subtitle">Test dine kunnskaper</p>
-        
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress"></div>
-        </div>
-
-        <div id="question-number" class="question-number"></div>
-        <h2 class="question-text" id="question"></h2>
-        
-        <div id="feedback" class="feedback"></div>
-        
-        <div class="options" id="options"></div>
-
-        <div class="button-group">
-          <button class="btn btn-primary" id="next-btn" disabled>Neste spørsmål</button>
-        </div>
+   <div class="quiz-container"><!-- Quiz Screen -->
+    <div id="quiz-screen">
+     <h1 class="quiz-title" id="title">Kapittel 12: Arbeid og Velferd</h1>
+     <p class="quiz-subtitle" id="subtitle">Test dine kunnskaper</p>
+     <div class="progress-bar">
+      <div class="progress-fill" id="progress"></div>
+     </div>
+     <div id="question-number" class="question-number"></div>
+     <h2 class="question-text" id="question"></h2>
+     <div id="feedback" class="feedback"></div>
+     <div class="options" id="options"></div>
+     <div class="button-group"><button class="btn btn-primary" id="next-btn" disabled>Neste spørsmål</button>
+     </div>
+    </div><!-- Results Screen -->
+    <div id="results-screen" class="results-container">
+     <div class="score-circle" id="score-display"></div>
+     <h2 class="results-title" id="results-title">Quiz ferdig!</h2>
+     <p class="results-text" id="results-message"></p>
+     <div class="results-details">
+      <div class="detail-row"><span class="detail-label">Riktige svar:</span> <span class="detail-value" id="correct-count"></span>
       </div>
-
-      <!-- Results Screen -->
-      <div id="results-screen" class="results-container">
-        <div class="score-circle" id="score-display"></div>
-        <h2 class="results-title" id="results-title">Quiz ferdig!</h2>
-        <p class="results-text" id="results-message"></p>
-        
-        <div class="results-details">
-          <div class="detail-row">
-            <span class="detail-label">Riktige svar:</span>
-            <span class="detail-value" id="correct-count"></span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Feil svar:</span>
-            <span class="detail-value" id="incorrect-count"></span>
-          </div>
-          <div class="detail-row">
-            <span class="detail-label">Prosent:</span>
-            <span class="detail-value" id="percentage"></span>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button class="btn btn-primary" id="retake-btn">Gjør quizen på nytt</button>
-        </div>
+      <div class="detail-row"><span class="detail-label">Feil svar:</span> <span class="detail-value" id="incorrect-count"></span>
       </div>
+      <div class="detail-row"><span class="detail-label">Prosent:</span> <span class="detail-value" id="percentage"></span>
+      </div>
+     </div>
+     <div class="button-group"><button class="btn btn-primary" id="retake-btn">Gjør quizen på nytt</button>
+     </div>
     </div>
+   </div>
   </div>
-
   <script>
     const questions = [
       {
@@ -498,4 +482,80 @@
       answered = false;
     }
 
- 
+    function selectOption(index) {
+      if (answered) return;
+
+      const question = questions[currentQuestion];
+      const options = document.querySelectorAll('.option');
+      const feedback = document.getElementById('feedback');
+
+      options.forEach(opt => opt.classList.add('disabled'));
+
+      const isCorrect = index === question.correct;
+
+      if (isCorrect) {
+        options[index].classList.add('correct');
+        feedback.className = 'feedback show correct';
+        feedback.textContent = '✓ Riktig svar!';
+        score++;
+      } else {
+        options[index].classList.add('incorrect');
+        options[question.correct].classList.add('correct');
+        feedback.className = 'feedback show incorrect';
+        feedback.textContent = `✗ Feil svar. Det riktige svaret er: "${question.options[question.correct]}"`;
+      }
+
+      document.getElementById('next-btn').disabled = false;
+      answered = true;
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        displayQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById('quiz-screen').style.display = 'none';
+      document.getElementById('results-screen').classList.add('show');
+
+      const percentage = Math.round((score / questions.length) * 100);
+      document.getElementById('score-display').textContent = `${percentage}%`;
+      document.getElementById('correct-count').textContent = score;
+      document.getElementById('incorrect-count').textContent = questions.length - score;
+      document.getElementById('percentage').textContent = percentage + '%';
+
+      if (percentage === 100) {
+        document.getElementById('results-title').textContent = 'Perfekt!';
+        document.getElementById('results-message').textContent = 'Du beherska alle spørsmålene! 🎉';
+      } else if (percentage >= 80) {
+        document.getElementById('results-title').textContent = 'Kjempebra!';
+        document.getElementById('results-message').textContent = 'Du gjorde det veldig bra på quizen!';
+      } else if (percentage >= 60) {
+        document.getElementById('results-title').textContent = 'Bra innsats!';
+        document.getElementById('results-message').textContent = 'Du har god kunnskaper, men det er rom for forbedring.';
+      } else {
+        document.getElementById('results-title').textContent = 'Prøv igjen!';
+        document.getElementById('results-message').textContent = 'Gjennomfør quizen på nytt og se hvor du kan forbedre deg.';
+      }
+    }
+
+    function retakeQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      answered = false;
+      document.getElementById('quiz-screen').style.display = 'block';
+      document.getElementById('results-screen').classList.remove('show');
+      displayQuestion();
+    }
+
+    document.getElementById('next-btn').addEventListener('click', nextQuestion);
+    document.getElementById('retake-btn').addEventListener('click', retakeQuiz);
+
+    initializeSDK().then(() => displayQuestion());
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c81a20d95807130',t:'MTc3MDExODYxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
