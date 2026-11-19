@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meld inn feil – Rotary CICO</title>
+<style>
+  :root{
+    --blue:#17458f; --blue-dark:#0e2f66; --gold:#f7a81b;
+    --bg:#f2f5fa; --card:#fff; --text:#1c2433; --muted:#5b6578; --line:#d5dbe7; --err:#c0392b; --ok:#1e7a46;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.5}
+  header{background:var(--blue);color:#fff;padding:28px 16px 36px;border-bottom:5px solid var(--gold)}
+  header .in{max-width:760px;margin:0 auto}
+  header h1{margin:0 0 6px;font-size:1.6rem}
+  header p{margin:0;opacity:.9}
+  main{max-width:760px;margin:-20px auto 40px;padding:0 16px}
+  form,.done{background:var(--card);border-radius:14px;box-shadow:0 4px 18px rgba(14,47,102,.12);padding:24px}
+  fieldset{border:0;margin:0 0 22px;padding:0}
+  legend,label.lbl{font-weight:600;display:block;margin-bottom:8px}
+  .req{color:var(--err)}
+  .hint{color:var(--muted);font-size:.88rem;margin:-4px 0 8px}
+  .cats{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .cat input{position:absolute;opacity:0}
+  .cat span{display:block;border:2px solid var(--line);border-radius:10px;padding:14px;cursor:pointer;height:100%;transition:.15s}
+  .cat b{display:block;margin-bottom:2px}
+  .cat small{color:var(--muted)}
+  .cat span:hover{border-color:var(--blue)}
+  .cat input:checked + span{border-color:var(--blue);background:#e8effb;box-shadow:inset 0 0 0 1px var(--blue)}
+  .cat input:focus-visible + span{outline:3px solid var(--gold)}
+  input[type=text],input[type=email],input[type=url],select,textarea{
+    width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;font:inherit;background:#fff}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(23,69,143,.18)}
+  textarea{min-height:110px;resize:vertical}
+  .row{display:grid;gap:14px;grid-template-columns:1fr 1fr}
+  @media(max-width:560px){.row{grid-template-columns:1fr}}
+  .field{margin-bottom:16px}
+  .extra{display:none;border-left:4px solid var(--gold);padding-left:14px;margin-bottom:6px}
+  .extra.show{display:block}
+  .invalid{border-color:var(--err)!important}
+  .msg{color:var(--err);font-size:.85rem;margin-top:4px;display:none}
+  .msg.show{display:block}
+  .warn{background:#fff6e0;border:1px solid #f0d08a;border-radius:8px;padding:10px 12px;font-size:.9rem;margin-bottom:14px}
+  button{background:var(--blue);color:#fff;border:0;border-radius:8px;padding:12px 26px;font:inherit;font-weight:600;cursor:pointer}
+  button:hover{background:var(--blue-dark)}
+  button:disabled{opacity:.6;cursor:wait}
+  .secondary{background:transparent;color:var(--blue);border:1.5px solid var(--blue)}
+  .secondary:hover{background:#e8effb}
+  .top-err{background:#fdecea;border:1px solid #f1b5ae;color:var(--err);padding:10px 12px;border-radius:8px;margin-bottom:14px;display:none}
+  .top-err.show{display:block}
+  .done{display:none;text-align:center}
+  .done.show{display:block}
+  .done .ok{font-size:3rem;color:var(--ok)}
+  .hp{position:absolute;left:-9999px}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <h1>Meld inn feil eller utfordring</h1>
+  <p>For CICOer i Rotary-klubbene – ny nettløsning (Umbraco)</p>
+</div></header>
+
+<main>
+<form id="f" novalidate>
+  <div class="top-err" id="topErr" role="alert"></div>
+
+  <fieldset>
+    <legend>1. Hva gjelder det? <span class="req">*</span></legend>
+    <div class="cats">
+      <label class="cat"><input type="radio" name="kategori" value="Bug i nettside-applikasjon"><span><b>🐞 Bug i nettside-applikasjon</b><small>Noe fungerer ikke som det skal på nettsiden</small></span></label>
+      <label class="cat"><input type="radio" name="kategori" value="Innlogging i Umbraco"><span><b>🔑 Innlogging i Umbraco</b><small>Problemer med å logge inn eller tilgang</small></span></label>
+      <label class="cat"><input type="radio" name="kategori" value="Feilmelding"><span><b>⚠️ Feilmelding</b><small>Du får en feilmelding på skjermen</small></span></label>
+    </div>
+    <div class="msg" id="katMsg">Velg en kategori.</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>2. Om deg</legend>
+    <div class="row">
+      <div class="field"><label class="lbl" for="navn">Navn <span class="req">*</span></label><input type="text" id="navn" name="Navn" autocomplete="name"><div class="msg">Oppgi navn.</div></div>
+      <div class="field"><label class="lbl" for="klubb">Rotary-klubb <span class="req">*</span></label><input type="text" id="klubb" name="Klubb"><div class="msg">Oppgi klubb.</div></div>
+    </div>
+    <div class="field">
+      <label class="lbl" for="epost">Din e-postadresse <span class="req">*</span></label>
+      <div class="hint">Vi bruker denne til å svare deg og stille oppfølgingsspørsmål.</div>
+      <input type="email" id="epost" name="email" autocomplete="email" placeholder="navn@eksempel.no">
+      <div class="msg">Oppgi en gyldig e-postadresse.</div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>3. Detaljer</legend>
+
+    <div class="extra" data-for="Bug i nettside-applikasjon">
+      <div class="field"><label class="lbl" for="url">Hvilken side / adresse (URL)?</label><input type="url" id="url" name="Side (URL)" placeholder="https://..."></div>
+      <div class="field"><label class="lbl" for="steg">Hva gjorde du før feilen oppstod?</label><textarea id="steg" name="Steg for å gjenskape" placeholder="1. Jeg klikket på …&#10;2. Deretter …"></textarea></div>
+      <div class="field"><label class="lbl" for="forventet">Hva forventet du skulle skje?</label><input type="text" id="forventet" name="Forventet resultat"></div>
+    </div>
+
+    <div class="extra" data-for="Innlogging i Umbraco">
+      <div class="warn">🔒 <b>Skriv aldri passordet ditt her.</b> Oppgi kun brukernavn/e-post.</div>
+      <div class="field"><label class="lbl" for="innlType">Hva slags problem?</label>
+        <select id="innlType" name="Type innloggingsproblem">
+          <option value="">Velg …</option>
+          <option>Får ikke logget inn</option>
+          <option>Glemt passord / tilbakestilling virker ikke</option>
+          <option>Har ikke fått tilgang / bruker mangler</option>
+          <option>Får ikke tilgang til riktig klubbside</option>
+          <option>Annet</option>
+        </select></div>
+      <div class="field"><label class="lbl" for="brukernavn">Brukernavn du forsøker å logge inn med</label><input type="text" id="brukernavn" name="Brukernavn"></div>
+    </div>
+
+    <div class="extra" data-for="Feilmelding">
+      <div class="field"><label class="lbl" for="feiltekst">Tekst i feilmeldingen</label><div class="hint">Kopier teksten eller skriv den av så nøyaktig du kan.</div><textarea id="feiltekst" name="Feilmeldingstekst"></textarea></div>
+      <div class="field"><label class="lbl" for="hvor">Hvor / når dukket den opp?</label><input type="text" id="hvor" name="Hvor/når"></div>
+    </div>
+
+    <div class="field">
+      <label class="lbl" for="beskrivelse">Beskriv problemet <span class="req">*</span></label>
+      <textarea id="beskrivelse" name="Beskrivelse"></textarea>
+      <div class="msg">Beskriv kort hva som er galt.</div>
+    </div>
+
+    <div class="row">
+      <div class="field"><label class="lbl" for="alvor">Hvor alvorlig er det?</label>
+        <select id="alvor" name="Alvorlighetsgrad">
+          <option>Lav – kosmetisk / liten irritasjon</option>
+          <option selected>Middels – kommer rundt det, men er plagsomt</option>
+          <option>Høy – får ikke gjort jobben min</option>
+        </select></div>
+      <div class="field"><label class="lbl" for="enhet">Nettleser og enhet</label><input type="text" id="enhet" name="Nettleser/enhet" placeholder="F.eks. Chrome på Windows"></div>
+    </div>
+
+    <div class="field"><label class="lbl" for="fil">Skjermbilde (valgfritt)</label><input type="file" id="fil" name="attachment" accept="image/*,.pdf"></div>
+  </fieldset>
+
+  <input class="hp" type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true">
+  <button type="submit" id="send">Send inn</button>
+</form>
+
+<div class="done" id="done" role="status">
+  <div class="ok">✓</div>
+  <h2>Takk! Meldingen er sendt.</h2>
+  <p>Vi tar kontakt på <b id="doneMail"></b> om vi trenger mer informasjon.</p>
+  <button class="secondary" id="again" type="button">Send inn en ny melding</button>
+</div>
+</main>
+
+<script>
+(function(){
+  const TO = "sgliweltevreden@gmail.com";
+  const f = document.getElementById('f');
+  const topErr = document.getElementById('topErr');
+  const send = document.getElementById('send');
+
+  // Vis kategori-spesifikke felt
+  function updateExtra(){
+    const v = (f.kategori.value || "");
+    document.querySelectorAll('.extra').forEach(e => e.classList.toggle('show', e.dataset.for === v));
+  }
+  f.querySelectorAll('input[name=kategori]').forEach(r => r.addEventListener('change', () => {
+    updateExtra(); document.getElementById('katMsg').classList.remove('show');
+  }));
+
+  function setErr(el, bad){
+    el.classList.toggle('invalid', bad);
+    const m = el.parentElement.querySelector('.msg'); if (m) m.classList.toggle('show', bad);
+  }
+  function validate(){
+    let ok = true;
+    const kat = f.kategori.value;
+    document.getElementById('katMsg').classList.toggle('show', !kat); if(!kat) ok = false;
+    ['navn','klubb','beskrivelse'].forEach(id => { const el = f[id] || document.getElementById(id); const bad = !el.value.trim(); setErr(el, bad); if(bad) ok = false; });
+    const em = document.getElementById('epost');
+    const badMail = !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(em.value.trim());
+    setErr(em, badMail); if (badMail) ok = false;
+    return ok;
+  }
+
+  function buildMailto(data){
+    let body = "";
+    for (const [k,v] of data) if (!k.startsWith('_') && k !== 'attachment' && v) body += k + ": " + v + "\n";
+    return "mailto:" + TO + "?subject=" + encodeURIComponent("Rotary Umbraco – " + data.get('kategori')) + "&body=" + encodeURIComponent(body);
+  }
+
+  f.addEventListener('submit', async e => {
+    e.preventDefault();
+    topErr.classList.remove('show');
+    if (!validate()) { topErr.textContent = "Fyll ut de obligatoriske feltene markert med *."; topErr.classList.add('show'); window.scrollTo({top:0,behavior:'smooth'}); return; }
+
+    const data = new FormData(f);
+    if (data.get('_honey')) return;           // spam-felle
+    if (!data.get('attachment') || !data.get('attachment').size) data.delete('attachment');
+    data.set('_subject', "Rotary Umbraco – " + data.get('kategori') + " (" + data.get('Klubb') + ")");
+    data.set('_replyto', data.get('email'));
+    data.set('_template', 'table');
+    data.set('_captcha', 'false');
+
+    send.disabled = true; send.textContent = "Sender …";
+    try {
+      const r = await fetch("https://formsubmit.co/ajax/" + TO, { method:"POST", body:data, headers:{Accept:"application/json"} });
+      const j = await r.json().catch(()=>({}));
+      if (!r.ok || j.success === "false") throw new Error(j.message || "Feil ved sending");
+      document.getElementById('doneMail').textContent = data.get('email');
+      f.style.display = 'none'; document.getElementById('done').classList.add('show');
+      window.scrollTo({top:0,behavior:'smooth'});
+    } catch(err){
+      topErr.innerHTML = "Kunne ikke sende automatisk. <a href=\"" + buildMailto(data) + "\">Klikk her for å sende via e-postprogrammet ditt</a> i stedet.";
+      topErr.classList.add('show'); window.scrollTo({top:0,behavior:'smooth'});
+    } finally { send.disabled = false; send.textContent = "Send inn"; }
+  });
+
+  document.getElementById('again').addEventListener('click', () => {
+    f.reset(); updateExtra(); f.style.display = '';
+    document.getElementById('done').classList.remove('show');
+    document.querySelectorAll('.invalid').forEach(x => x.classList.remove('invalid'));
+  });
+
+  // Fyll inn nettleser/enhet automatisk som forslag
+  document.getElementById('enhet').placeholder = "F.eks. " + (navigator.userAgentData && navigator.userAgentData.platform || navigator.platform || "Chrome på Windows");
+})();
+</script>
+</body>
+</html>
